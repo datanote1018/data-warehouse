@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>贡献指南 - Data Warehouse</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+.doc-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 48px 24px 64px;
+}
+.doc-container h1 {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.doc-container .doc-subtitle {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 40px;
+}
+.doc-container h2 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-top: 40px;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.doc-container p, .doc-container li {
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--text-secondary);
+}
+.doc-container ul, .doc-container ol {
+  padding-left: 20px;
+  margin: 12px 0;
+}
+.doc-container li { margin-bottom: 6px; }
+.doc-container code {
+  background: var(--bg-hover);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'Consolas', 'Fira Code', monospace;
+  font-size: 13px;
+  color: var(--accent);
+}
+.doc-container pre {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  margin: 12px 0;
+  overflow-x: auto;
+}
+.doc-container pre code {
+  background: none;
+  padding: 0;
+  font-size: 13px;
+  color: var(--text-primary);
+  line-height: 1.7;
+}
+.doc-container strong { color: var(--text-primary); }
+.doc-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0;
+  font-size: 13px;
+}
+.doc-table th {
+  background: var(--bg-hover);
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+}
+.doc-table td {
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+.doc-table code { font-size: 12px; }
+.checklist { list-style: none; padding-left: 0; }
+.checklist li { padding-left: 24px; position: relative; }
+.checklist li::before {
+  content: '☐';
+  position: absolute;
+  left: 0;
+  color: var(--text-muted);
+}
+</style>
+</head>
+<body>
+
+<nav class="top-nav">
+  <a class="nav-logo" href="index.html"><span>Data</span> Warehouse</a>
+  <ul class="nav-links">
+    <li><a href="index.html">首页</a></li>
+    <li><a href="https://github.com/datanote1018/data-warehouse" target="_blank">GitHub</a></li>
+  </ul>
+</nav>
+
+<div class="doc-container">
+
+  <h1>贡献指南</h1>
+  <p class="doc-subtitle">感谢你对本项目的关注！以下是参与贡献的简要说明，请在提交 PR 之前阅读。</p>
+
+  <h2>分支管理</h2>
+  <ul>
+    <li><strong><code>master</code> 为保护分支</strong>，禁止直接推送，所有改动必须通过 Pull Request 提交。</li>
+    <li>从 <code>master</code> 创建你的分支，命名清晰：
+      <ul>
+        <li><code>add/glossary-trade</code> — 新增内容</li>
+        <li><code>fix/sql-tutorial-typo</code> — 修复问题</li>
+        <li><code>update/standards-naming</code> — 更新已有内容</li>
+      </ul>
+    </li>
+    <li>每个 PR 至少需要 <strong>1 位维护者审核</strong> 通过后才能合并。</li>
+    <li>合并时使用 <strong>Squash and Merge</strong>，保持提交历史整洁。</li>
+  </ul>
+
+  <h2>目录结构</h2>
+  <pre><code>data-warehouse/
+├── index.html              ← 站点首页（新增模块时需同步更新）
+├── assets/style.css        ← 公共样式（不要在子目录中重复定义）
+├── sql-tutorial/           ← SQL 练习平台
+├── standards/              ← 数仓规范
+├── glossary/               ← 命名词根字典
+└── docs/                   ← 项目文档（非面向用户的内容）</code></pre>
+
+  <h2>命名规范</h2>
+  <table class="doc-table">
+    <tr><th>类型</th><th>规则</th><th>示例</th></tr>
+    <tr><td>目录名</td><td>全小写，用 <code>-</code> 连接</td><td><code>sql-tutorial/</code></td></tr>
+    <tr><td>HTML 文件</td><td>全小写，多词用 <code>_</code> 连接</td><td><code>sql_practice.html</code></td></tr>
+    <tr><td>CSS / JS 文件</td><td>全小写，用 <code>-</code> 连接</td><td><code>style.css</code></td></tr>
+    <tr><td>分支名</td><td><code>类型/简短描述</code></td><td><code>add/glossary-finance</code></td></tr>
+  </table>
+
+  <h2>如何新增内容</h2>
+  <ol>
+    <li><strong>先提 Issue</strong> — 简要描述你想添加的内容，让维护者确认方向后再动手。</li>
+    <li>如果目录不存在，创建对应目录。</li>
+    <li>HTML 文件必须引用公共样式表：
+      <pre><code>&lt;link rel="stylesheet" href="../assets/style.css"&gt;</code></pre>
+    </li>
+    <li>页面风格保持深色主题统一，使用 <code>assets/style.css</code> 中定义的 CSS 变量。详见 <a href="https://github.com/datanote1018/data-warehouse/blob/master/docs/style-guide.md" target="_blank" style="color:var(--accent);">风格指南</a>。</li>
+    <li>在 <code>index.html</code> 首页中为新模块添加入口卡片。</li>
+    <li>按照 PR 模板提交 Pull Request。</li>
+  </ol>
+
+  <h2>Commit 格式</h2>
+  <p>简短清晰，使用前缀：</p>
+  <pre><code>add: 窗口函数练习题
+fix: 词根字典页面断链
+update: 命名规范章节
+docs: 完善贡献指南</code></pre>
+
+  <h2>审核清单</h2>
+  <p>PR 审核时，维护者会检查以下内容：</p>
+  <ul class="checklist">
+    <li>分支基于最新 <code>master</code></li>
+    <li>内容准确、表述清晰</li>
+    <li>HTML 遵循公共样式（深色主题、一致的布局）</li>
+    <li>无断链、无缺失资源</li>
+    <li>新增模块时已更新 <code>index.html</code> 首页</li>
+    <li>Commit 信息规范</li>
+  </ul>
+
+  <h2>有问题？</h2>
+  <p>提一个带 <strong>Question</strong> 标签的 <a href="https://github.com/datanote1018/data-warehouse/issues/new" target="_blank" style="color:var(--accent);">Issue</a>，我们很乐意帮忙！</p>
+
+</div>
+
+<footer class="site-footer">
+  <p><a href="index.html">&larr; 返回首页</a></p>
+</footer>
+
+</body>
+</html>

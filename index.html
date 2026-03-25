@@ -3,58 +3,415 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Data Warehouse Knowledge Base</title>
-<link rel="stylesheet" href="assets/style.css">
+<title>Data Warehouse - 数据仓库知识库</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap');
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg-deep: #050a18;
+  --bg-card: rgba(12,18,38,0.6);
+  --bg-card-hover: rgba(20,30,56,0.7);
+  --text-primary: #eaf0ff;
+  --text-secondary: #8892b0;
+  --text-muted: #5a6480;
+  --accent: #38bdf8;
+  --teal: #2de8b0;
+  --gold: #fbbf24;
+  --border-subtle: rgba(136,146,176,0.1);
+  --border-accent: rgba(56,189,248,0.3);
+  --radius: 14px;
+}
+html { scroll-behavior: smooth; }
+body {
+  min-height: 100vh;
+  font-family: 'Noto Sans SC', 'PingFang SC', 'Segoe UI', sans-serif;
+  background: var(--bg-deep);
+  color: var(--text-primary);
+}
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.012) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.012) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+}
+body::after {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse 55% 45% at 50% 0%, rgba(56,130,246,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 35% 35% at 88% 75%, rgba(245,158,11,0.03) 0%, transparent 50%),
+    radial-gradient(ellipse 30% 30% at 8% 65%, rgba(45,232,176,0.03) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.container {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 32px;
+  position: relative; z-index: 1;
+}
+
+/* ===== GitHub Corner ===== */
+.github-corner svg { fill: var(--accent); color: var(--bg-deep); position: fixed; top: 0; right: 0; border: 0; z-index: 100; }
+.github-corner:hover .octo-arm { animation: octocat-wave 560ms ease-in-out; }
+@keyframes octocat-wave {
+  0%,100% { transform: rotate(0); }
+  20%,60% { transform: rotate(-25deg); }
+  40%,80% { transform: rotate(10deg); }
+}
+
+/* ===== Navigation ===== */
+.top-nav {
+  position: sticky; top: 0; z-index: 50;
+  max-width: 1080px; margin: 0 auto;
+  padding: 0 32px; height: 56px;
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(5,10,24,0.8);
+  backdrop-filter: blur(16px);
+}
+.nav-logo { font-size: 15px; font-weight: 700; color: var(--text-primary); text-decoration: none; }
+.nav-logo span { color: var(--accent); }
+.nav-links { display: flex; gap: 28px; list-style: none; }
+.nav-links a { color: var(--text-secondary); text-decoration: none; font-size: 13px; transition: color .2s; }
+.nav-links a:hover { color: var(--accent); }
+
+/* ===== Hero ===== */
+.hero {
+  padding: 100px 0 64px;
+  text-align: center;
+}
+.hero h1 {
+  font-size: clamp(2.6rem, 7vw, 3.4rem);
+  font-weight: 900; letter-spacing: 3px;
+  background: linear-gradient(135deg, #eaf0ff 0%, #38bdf8 50%, #2de8b0 100%);
+  background-size: 200% 200%;
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradientShift 6s ease infinite;
+  filter: drop-shadow(0 0 32px rgba(56,189,248,0.1));
+}
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.hero .tagline {
+  font-size: 1.05rem; color: var(--text-secondary);
+  margin-top: 20px; line-height: 1.8; letter-spacing: 0.5px;
+}
+.hero .hero-cta {
+  display: inline-flex; align-items: center; gap: 8px;
+  margin-top: 36px; padding: 14px 40px;
+  background: linear-gradient(135deg, #3b82f6 0%, #2dd4bf 100%);
+  color: #fff; font-size: 15px; font-weight: 600;
+  border-radius: 12px; text-decoration: none;
+  transition: all .3s;
+  box-shadow: 0 0 20px rgba(59,130,246,0.15), 0 4px 24px rgba(45,216,176,0.08);
+}
+.hero .hero-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 32px rgba(59,130,246,0.3), 0 8px 36px rgba(45,216,176,0.15);
+}
+
+/* ===== Section ===== */
+.section { margin-bottom: 56px; }
+.section-title {
+  font-size: 1.25rem; font-weight: 700;
+  margin-bottom: 24px;
+  color: var(--text-primary);
+}
+.section-title span { color: var(--accent); font-weight: 700; margin-right: 8px; }
+
+/* ===== SVG Icons ===== */
+.icon-svg {
+  width: 22px; height: 22px;
+  stroke: var(--accent);
+  stroke-width: 1.5;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 4px rgba(56,189,248,0.4));
+  transition: filter .3s;
+}
+.card:hover .icon-svg {
+  filter: drop-shadow(0 0 8px rgba(56,189,248,0.6));
+}
+/* 不同卡片不同色 */
+.icon-teal { stroke: var(--teal); filter: drop-shadow(0 0 4px rgba(45,232,176,0.4)); }
+.card:hover .icon-teal { filter: drop-shadow(0 0 8px rgba(45,232,176,0.6)); }
+.icon-gold { stroke: var(--gold); filter: drop-shadow(0 0 4px rgba(251,191,36,0.4)); }
+.card:hover .icon-gold { filter: drop-shadow(0 0 8px rgba(251,191,36,0.6)); }
+.icon-purple { stroke: #a78bfa; filter: drop-shadow(0 0 4px rgba(167,139,250,0.4)); }
+.card:hover .icon-purple { filter: drop-shadow(0 0 8px rgba(167,139,250,0.6)); }
+.icon-coral { stroke: #fb7185; filter: drop-shadow(0 0 4px rgba(251,113,133,0.4)); }
+.card:hover .icon-coral { filter: drop-shadow(0 0 8px rgba(251,113,133,0.6)); }
+
+.icon-wrap {
+  width: 44px; height: 44px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 10px;
+  background: rgba(56,189,248,0.05);
+  border: 1px solid rgba(56,189,248,0.08);
+  transition: all .3s;
+}
+.icon-wrap-teal { background: rgba(45,232,176,0.05); border-color: rgba(45,232,176,0.08); }
+.icon-wrap-gold { background: rgba(251,191,36,0.05); border-color: rgba(251,191,36,0.08); }
+.icon-wrap-purple { background: rgba(167,139,250,0.05); border-color: rgba(167,139,250,0.08); }
+.icon-wrap-coral { background: rgba(251,113,133,0.05); border-color: rgba(251,113,133,0.08); }
+
+/* ===== Card Grid ===== */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  padding: 24px;
+  text-decoration: none; color: var(--text-primary);
+  transition: all .3s ease;
+  display: flex; flex-direction: column; gap: 14px;
+  backdrop-filter: blur(8px);
+}
+.card:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-accent);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(56,189,248,0.06);
+}
+.card .card-top { display: flex; align-items: center; justify-content: space-between; }
+.card .badge {
+  font-size: 11px; padding: 3px 10px;
+  border-radius: 6px; font-weight: 500;
+}
+.badge-ready { background: rgba(45,232,176,0.08); color: var(--teal); }
+.badge-soon { background: rgba(251,191,36,0.08); color: var(--gold); }
+.card .card-title { font-size: 1rem; font-weight: 600; }
+.card .card-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; }
+
+/* ===== Link Grid ===== */
+.link-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+.link-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 16px 18px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  text-decoration: none; color: var(--text-primary);
+  transition: all .3s;
+  backdrop-filter: blur(8px);
+}
+.link-item:hover {
+  border-color: var(--border-accent);
+  background: var(--bg-card-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(56,189,248,0.05);
+}
+.link-icon-svg {
+  width: 18px; height: 18px; flex-shrink: 0;
+  stroke: var(--accent); stroke-width: 1.5; fill: none;
+  stroke-linecap: round; stroke-linejoin: round;
+  filter: drop-shadow(0 0 3px rgba(56,189,248,0.4));
+}
+.link-item .link-text { font-size: 13px; font-weight: 500; }
+.link-item .link-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+/* ===== Footer ===== */
+.site-footer {
+  text-align: center; padding: 48px 0 40px;
+  font-size: 0.8rem; color: var(--text-muted);
+}
+.site-footer a { color: var(--text-secondary); text-decoration: none; }
+.site-footer a:hover { color: var(--accent); }
+.site-footer .footer-tagline { margin-top: 10px; font-size: 0.85rem; }
+
+/* ===== Fade In ===== */
+.fade-in {
+  opacity: 0; transform: translateY(20px);
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+.fade-in-d1 { animation-delay: 0s; }
+.fade-in-d2 { animation-delay: 0.15s; }
+.fade-in-d3 { animation-delay: 0.3s; }
+@keyframes fadeInUp {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 860px) {
+  .container { padding: 0 20px; }
+  .top-nav { padding: 0 20px; }
+  .card-grid { grid-template-columns: repeat(2, 1fr); }
+  .link-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 540px) {
+  .hero { padding: 72px 0 48px; }
+  .card-grid { grid-template-columns: 1fr; }
+  .link-grid { grid-template-columns: 1fr; }
+  .nav-links { gap: 16px; }
+}
+</style>
 </head>
 <body>
 
-<header class="site-header">
-  <h1><span>Data</span> Warehouse</h1>
-  <p class="subtitle">Knowledge Base for Data Engineers</p>
-</header>
+<!-- GitHub Corner -->
+<a href="https://github.com/datanote1018/data-warehouse" class="github-corner" target="_blank" aria-label="View on GitHub">
+  <svg width="68" height="68" viewBox="0 0 250 250" aria-hidden="true">
+    <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+    <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin:130px 106px;" class="octo-arm"></path>
+    <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor"></path>
+  </svg>
+</a>
 
-<div class="card-grid">
+<!-- Navigation -->
+<nav class="top-nav">
+  <a class="nav-logo" href="index.html"><span>Data</span> Warehouse</a>
+  <ul class="nav-links">
+    <li><a href="#modules">模块</a></li>
+    <li><a href="#community">贡献</a></li>
+    <li><a href="https://github.com/datanote1018/data-warehouse" target="_blank">GitHub</a></li>
+  </ul>
+</nav>
 
-  <a class="card" href="sql-tutorial/sql_practice.html">
-    <div class="icon">&#128187;</div>
-    <span class="badge badge-ready">Ready</span>
-    <div class="card-title">SQL Tutorial</div>
-    <div class="card-desc">Interactive HiveSQL tutorial with exercises, function reference, and a built-in query editor.</div>
-  </a>
+<div class="container">
 
-  <a class="card" href="standards/">
-    <div class="icon">&#128203;</div>
-    <span class="badge badge-soon">Coming Soon</span>
-    <div class="card-title">Standards</div>
-    <div class="card-desc">Naming conventions, layer design, and development guidelines for data warehouse projects.</div>
-  </a>
+  <!-- Hero -->
+  <section class="hero fade-in fade-in-d1">
+    <h1>Data Warehouse</h1>
+    <p class="tagline">开源数据仓库知识库 —— 从 SQL 练习到规范落地，帮你打好数据基本功</p>
+    <a class="hero-cta" href="sql-tutorial/sql_practice.html">开始学习 &#10132;</a>
+  </section>
 
-  <a class="card" href="glossary/">
-    <div class="icon">&#128218;</div>
-    <span class="badge badge-soon">Coming Soon</span>
-    <div class="card-title">Glossary</div>
-    <div class="card-desc">Common word roots and naming patterns used in data warehouse table and field design.</div>
-  </a>
+  <!-- Modules -->
+  <div class="section fade-in fade-in-d2" id="modules">
+    <h2 class="section-title"><span>&#10095;</span>知识模块</h2>
+    <div class="card-grid">
 
-  <a class="card" href="functions/">
-    <div class="icon">&#9889;</div>
-    <span class="badge badge-soon">Coming Soon</span>
-    <div class="card-title">Functions</div>
-    <div class="card-desc">Hive function cheat sheet covering both high-frequency and low-frequency functions.</div>
-  </a>
+      <a class="card" href="sql-tutorial/sql_practice.html">
+        <div class="card-top">
+          <div class="icon-wrap">
+            <svg class="icon-svg" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          </div>
+          <span class="badge badge-ready">已上线</span>
+        </div>
+        <div class="card-title">SQL 练习平台</div>
+        <div class="card-desc">交互式 HiveSQL 教程，内置练习题、函数速查和在线查询编辑器。</div>
+      </a>
 
-  <a class="card" href="optimization/">
-    <div class="icon">&#128640;</div>
-    <span class="badge badge-soon">Coming Soon</span>
-    <div class="card-title">Optimization</div>
-    <div class="card-desc">HiveSQL performance tuning: data skew, join strategies, execution engine, and compression.</div>
-  </a>
+      <a class="card" href="functions/">
+        <div class="card-top">
+          <div class="icon-wrap icon-wrap-purple">
+            <svg class="icon-svg icon-purple" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/><line x1="14" y1="4" x2="10" y2="20"/></svg>
+          </div>
+          <span class="badge badge-soon">筹备中</span>
+        </div>
+        <div class="card-title">函数手册</div>
+        <div class="card-desc">Hive 函数速查手册，高频与低频函数分类整理。</div>
+      </a>
+
+      <a class="card" href="optimization/">
+        <div class="card-top">
+          <div class="icon-wrap icon-wrap-coral">
+            <svg class="icon-svg icon-coral" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </div>
+          <span class="badge badge-soon">筹备中</span>
+        </div>
+        <div class="card-title">调优指南</div>
+        <div class="card-desc">HiveSQL 调优实战：数据倾斜、Join 策略与压缩方案。</div>
+      </a>
+
+      <a class="card" href="standards/">
+        <div class="card-top">
+          <div class="icon-wrap icon-wrap-teal">
+            <svg class="icon-svg icon-teal" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
+          </div>
+          <span class="badge badge-soon">筹备中</span>
+        </div>
+        <div class="card-title">数仓规范</div>
+        <div class="card-desc">分层设计、命名规范、开发规约，统一团队开发标准。</div>
+      </a>
+
+      <a class="card" href="glossary/">
+        <div class="card-top">
+          <div class="icon-wrap icon-wrap-gold">
+            <svg class="icon-svg icon-gold" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+          </div>
+          <span class="badge badge-soon">筹备中</span>
+        </div>
+        <div class="card-title">词根字典</div>
+        <div class="card-desc">数仓常用词根归纳，覆盖表名、字段名的命名模式。</div>
+      </a>
+
+      <a class="card" href="topics/">
+        <div class="card-top">
+          <div class="icon-wrap" style="background:rgba(129,140,248,0.05);border-color:rgba(129,140,248,0.08);">
+            <svg class="icon-svg" style="stroke:#818cf8;filter:drop-shadow(0 0 4px rgba(129,140,248,0.4));" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          </div>
+          <span class="badge badge-soon">筹备中</span>
+        </div>
+        <div class="card-title">主题划分</div>
+        <div class="card-desc">数仓主题域梳理，业务过程与分析维度的划分方法论。</div>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- Community -->
+  <div class="section fade-in fade-in-d3" id="community">
+    <h2 class="section-title"><span>&#10095;</span>参与贡献</h2>
+    <div class="link-grid">
+
+      <a class="link-item" href="contributing.html">
+        <svg class="link-icon-svg" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        <div>
+          <div class="link-text">贡献指南</div>
+          <div class="link-sub">了解如何参与项目</div>
+        </div>
+      </a>
+
+      <a class="link-item" href="https://github.com/datanote1018/data-warehouse/issues/new/choose" target="_blank">
+        <svg class="link-icon-svg" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <div>
+          <div class="link-text">提交建议</div>
+          <div class="link-sub">反馈或建议新内容</div>
+        </div>
+      </a>
+
+      <a class="link-item" href="https://github.com/datanote1018/data-warehouse/pulls" target="_blank">
+        <svg class="link-icon-svg" viewBox="0 0 24 24"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M6 21V9a9 9 0 0 0 9 9"/></svg>
+        <div>
+          <div class="link-text">合并请求</div>
+          <div class="link-sub">查看进行中的贡献</div>
+        </div>
+      </a>
+
+      <a class="link-item" href="https://github.com/datanote1018/data-warehouse/issues" target="_blank">
+        <svg class="link-icon-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <div>
+          <div class="link-text">问题追踪</div>
+          <div class="link-sub">查看待解决的问题</div>
+        </div>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <p><a href="https://github.com/datanote1018/data-warehouse" target="_blank">GitHub</a> &nbsp;&middot;&nbsp; <a href="https://github.com/datanote1018/data-warehouse/blob/master/LICENSE" target="_blank">MIT License</a></p>
+    <p class="footer-tagline">用开源的方式，共建数仓知识体系</p>
+  </footer>
 
 </div>
-
-<footer class="site-footer">
-  <p>Data Warehouse Knowledge Base &middot; <a href="https://github.com/datanote1018/data-warehouse" target="_blank">GitHub</a></p>
-</footer>
 
 </body>
 </html>

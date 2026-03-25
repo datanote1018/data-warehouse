@@ -24,42 +24,139 @@ html, body {
   color: var(--text-primary);
 }
 
-/* header */
-.site-header {
-  background: var(--bg-secondary);
-  border-bottom: 1px solid var(--border);
-  padding: 32px 24px 28px;
-  text-align: center;
-}
-.site-header h1 {
-  font-size: 28px;
-  font-weight: 700;
-  letter-spacing: 1px;
-}
-.site-header h1 span { color: var(--accent); }
-.site-header .subtitle {
-  font-size: 14px;
-  color: var(--text-muted);
-  margin-top: 8px;
+/* ===== GitHub Corner Ribbon ===== */
+.github-corner svg { fill: var(--accent); color: var(--bg-primary); position: absolute; top: 0; right: 0; border: 0; z-index: 10; }
+.github-corner:hover .octo-arm { animation: octocat-wave 560ms ease-in-out; }
+@keyframes octocat-wave {
+  0%, 100% { transform: rotate(0); }
+  20%, 60% { transform: rotate(-25deg); }
+  40%, 80% { transform: rotate(10deg); }
 }
 
-/* card grid */
+/* ===== Navigation Bar ===== */
+.top-nav {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 52px;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+.top-nav .nav-logo {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-decoration: none;
+  letter-spacing: 0.5px;
+}
+.top-nav .nav-logo span { color: var(--accent); }
+.top-nav .nav-links {
+  display: flex;
+  gap: 24px;
+  list-style: none;
+}
+.top-nav .nav-links a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 13px;
+  transition: color .2s;
+}
+.top-nav .nav-links a:hover { color: var(--accent); }
+
+/* ===== Hero Section ===== */
+.hero {
+  text-align: center;
+  padding: 80px 24px 64px;
+  background: var(--bg-secondary);
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -120px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(137,180,250,.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero h1 {
+  font-size: 42px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  position: relative;
+}
+.hero h1 span { color: var(--accent); }
+.hero .tagline {
+  font-size: 17px;
+  color: var(--text-secondary);
+  margin-top: 16px;
+  line-height: 1.8;
+  position: relative;
+}
+.hero .hero-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 32px;
+  padding: 12px 32px;
+  background: var(--accent);
+  color: var(--bg-primary);
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: all .2s;
+  position: relative;
+}
+.hero .hero-cta:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(137,180,250,.3);
+}
+
+/* ===== Section ===== */
+.section {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 48px 24px;
+}
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+.section-header h2 {
+  font-size: 20px;
+  font-weight: 700;
+}
+.section-header .line {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ===== Card Grid ===== */
 .card-grid {
-  max-width: 960px;
-  margin: 40px auto;
-  padding: 0 24px;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
   gap: 20px;
 }
 .card {
   background: var(--bg-surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 24px;
+  padding: 28px 24px;
   text-decoration: none;
   color: var(--text-primary);
-  transition: all .2s;
+  transition: all .25s;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -69,19 +166,33 @@ html, body {
 .card:hover {
   border-color: var(--accent);
   background: var(--bg-hover);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 20px rgba(0,0,0,.3);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(0,0,0,.35);
+}
+.card .card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 .card .icon {
-  font-size: 32px;
-  width: 48px;
-  height: 48px;
+  font-size: 28px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 10px;
   background: var(--bg-hover);
 }
+.card .badge {
+  display: inline-block;
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+.badge-ready { background: rgba(166,227,161,.15); color: var(--green); }
+.badge-soon { background: rgba(249,226,175,.12); color: var(--yellow); }
 .card .card-title {
   font-size: 17px;
   font-weight: 600;
@@ -89,28 +200,62 @@ html, body {
 .card .card-desc {
   font-size: 13px;
   color: var(--text-secondary);
-  line-height: 1.6;
+  line-height: 1.7;
 }
-.card .badge {
-  display: inline-block;
-  font-size: 11px;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-weight: 500;
-  align-self: flex-start;
-}
-.badge-ready { background: rgba(166,227,161,.15); color: var(--green); }
-.badge-soon { background: rgba(249,226,175,.12); color: var(--yellow); }
 
-/* footer */
+/* ===== Link List (for community section) ===== */
+.link-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+.link-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  text-decoration: none;
+  color: var(--text-primary);
+  font-size: 14px;
+  transition: all .2s;
+}
+.link-item:hover {
+  border-color: var(--accent);
+  background: var(--bg-hover);
+}
+.link-item .link-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.link-item .link-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* ===== Footer ===== */
 .site-footer {
   text-align: center;
-  padding: 32px 24px;
+  padding: 40px 24px;
   font-size: 12px;
   color: var(--text-muted);
+  border-top: 1px solid var(--border);
 }
 .site-footer a {
   color: var(--accent);
   text-decoration: none;
 }
 .site-footer a:hover { text-decoration: underline; }
+
+/* ===== Responsive ===== */
+@media (max-width: 640px) {
+  .hero h1 { font-size: 28px; }
+  .hero .tagline { font-size: 14px; }
+  .top-nav { padding: 0 16px; }
+  .top-nav .nav-links { gap: 16px; }
+  .section { padding: 32px 16px; }
+  .card-grid { grid-template-columns: 1fr; }
+  .link-grid { grid-template-columns: 1fr; }
+}
