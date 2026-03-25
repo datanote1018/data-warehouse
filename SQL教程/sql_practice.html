@@ -1,0 +1,2285 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HiveSQL 教程+练习平台</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg-primary: #1e1e2e;
+  --bg-secondary: #181825;
+  --bg-surface: #252538;
+  --bg-hover: #313147;
+  --text-primary: #cdd6f4;
+  --text-secondary: #a6adc8;
+  --text-muted: #6c7086;
+  --accent: #89b4fa;
+  --accent-hover: #74c7ec;
+  --green: #a6e3a1;
+  --yellow: #f9e2af;
+  --red: #f38ba8;
+  --orange: #fab387;
+  --border: #45475a;
+  --radius: 8px;
+}
+html, body { height: 100%; font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif; background: var(--bg-primary); color: var(--text-primary); }
+body { display: flex; flex-direction: column; }
+header { background: var(--bg-secondary); border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+header h1 { font-size: 20px; font-weight: 600; }
+header h1 span { color: var(--accent); }
+header .subtitle { font-size: 13px; color: var(--text-muted); }
+.main { display: flex; flex: 1; overflow: hidden; }
+.sidebar { width: 340px; min-width: 300px; background: var(--bg-secondary); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; flex-shrink: 0; }
+.sidebar-tabs { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.sidebar-tab { flex: 1; padding: 10px 8px; text-align: center; font-size: 13px; cursor: pointer; background: transparent; border: none; color: var(--text-secondary); border-bottom: 2px solid transparent; transition: all .2s; }
+.sidebar-tab:hover { color: var(--text-primary); background: var(--bg-hover); }
+.sidebar-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.sidebar-content { flex: 1; overflow-y: auto; padding: 12px; }
+.sidebar-content::-webkit-scrollbar { width: 6px; }
+.sidebar-content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+.table-card { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 10px; overflow: hidden; }
+.table-card-header { padding: 10px 12px; font-weight: 600; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; user-select: none; }
+.table-card-header:hover { background: var(--bg-hover); }
+.table-card-header .arrow { transition: transform .2s; font-size: 11px; color: var(--text-muted); }
+.table-card-header .arrow.open { transform: rotate(90deg); }
+.table-card-body { display: none; border-top: 1px solid var(--border); }
+.table-card-body.open { display: block; }
+.table-card-body table { width: 100%; font-size: 12px; border-collapse: collapse; }
+.table-card-body th { background: var(--bg-hover); padding: 5px 10px; text-align: left; color: var(--text-muted); font-weight: 500; }
+.table-card-body td { padding: 5px 10px; border-top: 1px solid var(--border); }
+.table-card-body td:first-child { color: var(--accent); font-family: 'Consolas', 'Fira Code', monospace; }
+.table-card-body td:nth-child(2) { color: var(--orange); font-family: monospace; font-size: 11px; }
+.table-card .row-count { font-size: 11px; color: var(--text-muted); font-weight: 400; }
+.schema-note { font-size: 11px; color: var(--text-muted); line-height: 1.6; margin-bottom: 12px; padding: 8px 10px; background: var(--bg-surface); border-radius: 6px; border-left: 3px solid var(--yellow); }
+.level-group { margin-bottom: 16px; }
+.level-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; padding-left: 4px; }
+.level-label.beginner { color: var(--green); }
+.level-label.intermediate { color: var(--yellow); }
+.level-label.advanced { color: var(--red); }
+.exercise-item { padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; margin-bottom: 4px; transition: all .15s; display: flex; align-items: baseline; gap: 8px; }
+.exercise-item:hover { background: var(--bg-hover); }
+.exercise-item.active { background: var(--accent); color: var(--bg-primary); }
+.exercise-item .num { font-weight: 700; font-size: 12px; min-width: 22px; }
+.exercise-item .tags { display: flex; gap: 4px; margin-left: auto; flex-shrink: 0; }
+.exercise-item .tag { font-size: 10px; padding: 1px 6px; border-radius: 3px; background: rgba(137,180,250,.15); color: var(--accent); }
+.exercise-item.active .tag { background: rgba(30,30,46,.25); color: var(--bg-primary); }
+.syntax-section { margin-bottom: 16px; }
+.syntax-section h3 { font-size: 13px; font-weight: 600; margin-bottom: 8px; color: var(--accent); }
+.syntax-block { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; margin-bottom: 8px; font-family: monospace; font-size: 12px; line-height: 1.6; white-space: pre-wrap; word-break: break-all; }
+.syntax-note { font-size: 11px; color: var(--text-muted); margin-top: 4px; font-style: italic; font-family: sans-serif; }
+.syntax-badge { display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 3px; margin-left: 6px; font-family: sans-serif; }
+.badge-ok { background: rgba(166,227,161,.15); color: var(--green); }
+.badge-ref { background: rgba(249,226,175,.15); color: var(--yellow); }
+.content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.exercise-bar { background: var(--bg-secondary); border-bottom: 1px solid var(--border); padding: 12px 20px; flex-shrink: 0; display: none; }
+.exercise-bar.show { display: block; }
+.exercise-bar .ex-title { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+.exercise-bar .ex-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.6; white-space: pre-wrap; }
+.exercise-bar .ex-hint { font-size: 12px; color: var(--yellow); margin-top: 6px; }
+.exercise-bar .ex-hint::before { content: '提示: '; font-weight: 600; }
+.editor-area { flex-shrink: 0; border-bottom: 1px solid var(--border); position: relative; }
+.CodeMirror { height: 220px; font-size: 14px; font-family: 'Consolas', 'Fira Code', 'Courier New', monospace; }
+.toolbar { display: flex; align-items: center; gap: 8px; padding: 8px 16px; background: var(--bg-secondary); border-bottom: 1px solid var(--border); }
+.btn { padding: 6px 16px; border-radius: 6px; border: 1px solid var(--border); font-size: 13px; cursor: pointer; font-weight: 500; transition: all .15s; }
+.btn-run { background: var(--accent); color: var(--bg-primary); border-color: var(--accent); }
+.btn-run:hover { background: var(--accent-hover); }
+.btn-clear { background: transparent; color: var(--text-secondary); }
+.btn-clear:hover { background: var(--bg-hover); color: var(--text-primary); }
+.btn-answer { background: transparent; color: var(--yellow); border-color: var(--yellow); }
+.btn-answer:hover { background: rgba(249,226,175,.1); }
+.btn-answer:disabled { opacity: .4; cursor: not-allowed; }
+.toolbar .spacer { flex: 1; }
+.toolbar .status { font-size: 12px; color: var(--text-muted); }
+.toolbar .run-hint { font-size: 11px; color: var(--yellow); display: none; }
+.toolbar .run-hint.show { display: inline; }
+.results { flex: 1; overflow: auto; padding: 16px; }
+.results::-webkit-scrollbar { width: 6px; height: 6px; }
+.results::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+.result-placeholder { color: var(--text-muted); font-size: 14px; display: flex; align-items: center; justify-content: center; height: 100%; }
+.result-table-wrap { overflow: auto; max-height: 100%; }
+.result-table { border-collapse: collapse; font-size: 13px; min-width: 100%; }
+.result-table th { background: var(--bg-surface); padding: 8px 14px; text-align: left; font-weight: 600; position: sticky; top: 0; border-bottom: 2px solid var(--accent); white-space: nowrap; }
+.result-table td { padding: 6px 14px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.result-table tr:hover td { background: var(--bg-hover); }
+.result-info { font-size: 12px; color: var(--text-muted); margin-top: 8px; }
+.result-error { background: rgba(243,139,168,.1); border: 1px solid var(--red); border-radius: var(--radius); padding: 12px 16px; color: var(--red); font-family: monospace; font-size: 13px; white-space: pre-wrap; }
+.result-success { background: rgba(166,227,161,.08); border: 1px solid rgba(166,227,161,.3); border-radius: var(--radius); padding: 10px 16px; color: var(--green); font-size: 13px; }
+.answer-block { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 18px; margin-top: 12px; }
+.answer-block h4 { font-size: 13px; color: var(--yellow); margin-bottom: 8px; }
+.answer-block pre { font-family: 'Consolas', 'Fira Code', monospace; font-size: 13px; line-height: 1.6; color: var(--text-primary); white-space: pre-wrap; }
+footer { background: var(--bg-secondary); border-top: 1px solid var(--border); padding: 8px 24px; font-size: 12px; color: var(--text-muted); text-align: center; flex-shrink: 0; }
+/* Tutorial styles */
+.tutorial-chapter { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 10px; overflow: hidden; }
+.tutorial-chapter-header { padding: 10px 12px; font-weight: 600; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; user-select: none; }
+.tutorial-chapter-header:hover { background: var(--bg-hover); }
+.tutorial-chapter-header .arrow { transition: transform .2s; font-size: 11px; color: var(--text-muted); }
+.tutorial-chapter-header .arrow.open { transform: rotate(90deg); }
+.tutorial-chapter-header .stars { color: var(--yellow); font-size: 12px; margin-left: 8px; }
+.tutorial-chapter-body { display: none; border-top: 1px solid var(--border); padding: 12px; font-size: 13px; line-height: 1.8; color: var(--text-secondary); }
+.tutorial-chapter-body.open { display: block; }
+.tutorial-chapter-body h4 { color: var(--accent); font-size: 14px; margin: 14px 0 6px 0; }
+.tutorial-chapter-body h4:first-child { margin-top: 0; }
+.tutorial-chapter-body p { margin: 6px 0; }
+.tutorial-chapter-body ul { margin: 6px 0 6px 18px; }
+.tutorial-chapter-body li { margin: 3px 0; }
+.tutorial-code-block { background: #1a1a2e; border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; margin: 8px 0; font-family: 'Consolas', 'Fira Code', monospace; font-size: 12px; line-height: 1.6; white-space: pre-wrap; color: var(--text-primary); position: relative; }
+.btn-try { display: inline-block; padding: 3px 12px; border-radius: 4px; border: 1px solid var(--green); background: rgba(166,227,161,.12); color: var(--green); font-size: 11px; cursor: pointer; font-weight: 600; margin-top: 6px; transition: all .15s; }
+.btn-try:hover { background: rgba(166,227,161,.25); }
+.tutorial-tip { background: rgba(249,226,175,.08); border-left: 3px solid var(--yellow); border-radius: 0 6px 6px 0; padding: 8px 12px; margin: 8px 0; font-size: 12px; color: var(--yellow); }
+.tutorial-tip::before { content: '💡 '; }
+.tutorial-warn { background: rgba(243,139,168,.08); border-left: 3px solid var(--red); border-radius: 0 6px 6px 0; padding: 8px 12px; margin: 8px 0; font-size: 12px; color: var(--red); }
+.tutorial-warn::before { content: '⚠ '; }
+.resize-handle {
+  height: 6px;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  cursor: ns-resize;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s;
+}
+.resize-handle:hover, .resize-handle.active {
+  background: var(--accent);
+  opacity: 0.3;
+}
+.resize-handle::after {
+  content: '';
+  width: 40px;
+  height: 2px;
+  background: var(--text-muted);
+  border-radius: 1px;
+}
+.exercise-bar { max-height: 150px; overflow-y: auto; }
+@media (max-width: 900px) { .sidebar { width: 260px; min-width: 220px; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1><span>HiveSQL</span> 教程+练习平台</h1>
+    <div class="subtitle">基于 sql.js (SQLite WASM) · 遵循数仓开发规范 · 教程+练习一体化 · 支持窗口函数 / CTE / Hive 自定义函数</div>
+  </div>
+</header>
+
+<div class="main">
+  <aside class="sidebar">
+    <div class="sidebar-tabs">
+      <button class="sidebar-tab active" data-tab="tutorial">教程</button>
+      <button class="sidebar-tab" data-tab="schema">表结构</button>
+      <button class="sidebar-tab" data-tab="exercises">练习题</button>
+      <button class="sidebar-tab" data-tab="syntax">Hive函数</button>
+    </div>
+    <div class="sidebar-content" id="sidebar-tutorial"></div>
+    <div class="sidebar-content" id="sidebar-schema" style="display:none"></div>
+    <div class="sidebar-content" id="sidebar-exercises" style="display:none"></div>
+    <div class="sidebar-content" id="sidebar-syntax" style="display:none"></div>
+  </aside>
+
+  <div class="content">
+    <div class="exercise-bar" id="exerciseBar">
+      <div class="ex-title" id="exTitle"></div>
+      <div class="ex-desc" id="exDesc"></div>
+      <div class="ex-hint" id="exHint"></div>
+    </div>
+    <div class="toolbar">
+      <button class="btn btn-run" id="btnRun">&#9654; 运行</button>
+      <button class="btn btn-clear" id="btnClear">清空</button>
+      <button class="btn btn-answer" id="btnAnswer" disabled>查看答案</button>
+      <div class="spacer"></div>
+      <span class="run-hint" id="runHint">选中部分将被执行</span>
+      <span class="status" id="execStatus"></span>
+    </div>
+    <div class="editor-area">
+      <textarea id="editor"></textarea>
+    </div>
+    <div class="resize-handle" id="resizeHandle"></div>
+    <div class="results" id="results">
+      <div class="result-placeholder">在上方编辑器中输入 SQL 语句，点击"运行"查看结果</div>
+    </div>
+  </div>
+</div>
+
+<footer>HiveSQL 教程+练习平台 · 遵循数仓开发规范(分层/命名/分区/SQL规范) · 数据均为模拟数据</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/sql/sql.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/sql-hint.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.js"></script>
+
+<script>
+// ============================================================
+// 表结构定义 — 严格遵循数仓开发规范
+// 命名: dim.dim_[维度]_df / dwd.dwd_[业务域]_[对象]_[行为]_di
+// 字段: [业务]_id, [业务]_name, [业务]_amount, [业务]_status, dt
+// ============================================================
+const SCHEMA = [
+  {
+    name: 'dim_user_info_df',
+    db: 'dim',
+    fullName: 'dim.dim_user_info_df',
+    comment: '用户维度表-全量',
+    layer: 'DIM',
+    columns: [
+      ['user_id','BIGINT','用户ID'],
+      ['user_name','STRING','用户名'],
+      ['gender','STRING','性别(M/F)'],
+      ['age','INT','年龄'],
+      ['city','STRING','城市'],
+      ['reg_date','STRING','注册日期'],
+      ['vip_level','INT','VIP等级(0-3)'],
+      ['dt','STRING','分区日期(yyyyMMdd)'],
+    ],
+    ddl: `CREATE TABLE dim.dim_user_info_df (
+  user_id INTEGER, user_name TEXT, gender TEXT, age INTEGER,
+  city TEXT, reg_date TEXT, vip_level INTEGER, dt TEXT
+)`,
+    rows: [], // 由 generateData() 填充
+  },
+  {
+    name: 'dim_product_info_df',
+    db: 'dim',
+    fullName: 'dim.dim_product_info_df',
+    comment: '商品维度表-全量',
+    layer: 'DIM',
+    columns: [
+      ['product_id','BIGINT','商品ID'],
+      ['product_name','STRING','商品名称'],
+      ['category','STRING','类目'],
+      ['unit_price','DECIMAL(18,2)','单价'],
+      ['brand','STRING','品牌'],
+      ['dt','STRING','分区日期'],
+    ],
+    ddl: `CREATE TABLE dim.dim_product_info_df (
+  product_id INTEGER, product_name TEXT, category TEXT,
+  unit_price REAL, brand TEXT, dt TEXT
+)`,
+    rows: [], // 由 generateData() 填充
+  },
+  {
+    name: 'dwd_trade_order_detail_di',
+    db: 'dwd',
+    fullName: 'dwd.dwd_trade_order_detail_di',
+    comment: '交易域-订单明细表-增量',
+    layer: 'DWD',
+    columns: [
+      ['order_id','BIGINT','订单ID'],
+      ['user_id','BIGINT','用户ID'],
+      ['product_id','BIGINT','商品ID'],
+      ['order_amount','DECIMAL(18,2)','订单金额'],
+      ['quantity','INT','数量'],
+      ['pay_time','STRING','支付时间'],
+      ['order_status','STRING','状态(paid/cancelled/refunded)'],
+      ['dt','STRING','分区日期'],
+    ],
+    ddl: `CREATE TABLE dwd.dwd_trade_order_detail_di (
+  order_id INTEGER, user_id INTEGER, product_id INTEGER,
+  order_amount REAL, quantity INTEGER, pay_time TEXT,
+  order_status TEXT, dt TEXT
+)`,
+    rows: [], // 由 generateData() 填充
+  },
+  {
+    name: 'dwd_traffic_user_action_di',
+    db: 'dwd',
+    fullName: 'dwd.dwd_traffic_user_action_di',
+    comment: '流量域-用户行为日志表-增量',
+    layer: 'DWD',
+    columns: [
+      ['log_id','BIGINT','日志ID'],
+      ['user_id','BIGINT','用户ID'],
+      ['action_type','STRING','行为类型(view/click/cart/buy/share)'],
+      ['page','STRING','页面'],
+      ['action_time','STRING','行为时间'],
+      ['duration','INT','停留时长(秒)'],
+      ['dt','STRING','分区日期'],
+    ],
+    ddl: `CREATE TABLE dwd.dwd_traffic_user_action_di (
+  log_id INTEGER, user_id INTEGER, action_type TEXT,
+  page TEXT, action_time TEXT, duration INTEGER, dt TEXT
+)`,
+    rows: [], // 由 generateData() 填充
+  },
+  {
+    name: 'dwd_user_login_di',
+    db: 'dwd',
+    fullName: 'dwd.dwd_user_login_di',
+    comment: '用户登录明细表-增量',
+    layer: 'DWD',
+    columns: [
+      ['log_id','BIGINT','日志ID'],
+      ['user_id','BIGINT','用户ID'],
+      ['login_date','STRING','登录日期'],
+      ['dt','STRING','分区日期'],
+    ],
+    ddl: `CREATE TABLE dwd.dwd_user_login_di (
+  log_id INTEGER, user_id INTEGER, login_date TEXT, dt TEXT
+)`,
+    rows: [], // 由 generateData() 填充
+  },
+  {
+    name: 'dwd_live_room_log_di',
+    db: 'dwd',
+    fullName: 'dwd.dwd_live_room_log_di',
+    comment: '互动域-直播间进出记录表-增量',
+    layer: 'DWD',
+    columns: [
+      ['log_id','BIGINT','日志ID'],
+      ['room_id','BIGINT','直播间ID'],
+      ['user_id','BIGINT','用户ID'],
+      ['action','STRING','动作(enter/leave)'],
+      ['action_time','STRING','动作时间'],
+      ['dt','STRING','分区日期'],
+    ],
+    ddl: `CREATE TABLE dwd.dwd_live_room_log_di (
+  log_id INTEGER, room_id INTEGER, user_id INTEGER,
+  action TEXT, action_time TEXT, dt TEXT
+)`,
+    rows: [], // 由 generateData() 填充
+  },
+  {
+    name: 'dwd_user_follow_di',
+    db: 'dwd',
+    fullName: 'dwd.dwd_user_follow_di',
+    comment: '互动域-用户关注关系表-增量',
+    layer: 'DWD',
+    columns: [
+      ['log_id','BIGINT','日志ID'],
+      ['user_id','BIGINT','关注者ID'],
+      ['follow_user_id','BIGINT','被关注者ID'],
+      ['follow_time','STRING','关注时间'],
+      ['dt','STRING','分区日期'],
+    ],
+    ddl: `CREATE TABLE dwd.dwd_user_follow_di (
+  log_id INTEGER, user_id INTEGER, follow_user_id INTEGER,
+  follow_time TEXT, dt TEXT
+)`,
+    rows: [], // 由 generateData() 填充
+  },
+];
+
+// ============================================================
+// 练习题 — SQL 严格遵循数仓开发规范
+// 关键字大写 · 必须带 dt 分区条件 · 字段换行对齐
+// JOIN 必须明确类型 · 维度表 dt 放 ON 子句
+// ============================================================
+const EXERCISES = [
+  // ---- 初级 ----
+  {
+    id: 1, level: 'beginner',
+    title: '基础 SELECT + WHERE 过滤',
+    tags: ['SELECT','WHERE'],
+    desc: '查询所有来自"北京"的用户的 user_id、user_name 和 age。\n注意: 所有分区表查询必须带 dt 分区条件。',
+    hint: 'SELECT ... FROM dim.dim_user_info_df WHERE dt = \'20250101\' AND city = \'北京\'',
+    answer: `SELECT
+    user_id,
+    user_name,
+    age
+FROM dim.dim_user_info_df
+WHERE dt = '20250101'
+    AND city = '北京';`,
+  },
+  {
+    id: 2, level: 'beginner',
+    title: '排序与限制',
+    tags: ['ORDER BY','LIMIT'],
+    desc: '查询订单金额最高的前 5 笔已支付订单(order_status=\'paid\')，显示 order_id、order_amount、pay_time，按金额降序排列。\nDWD 表的 dt 分区使用范围条件覆盖2025年1月所有数据。',
+    hint: 'WHERE dt >= \'20250101\' AND dt <= \'20250130\' AND order_status = \'paid\' ORDER BY order_amount DESC LIMIT 5',
+    answer: `SELECT
+    order_id,
+    order_amount,
+    pay_time
+FROM dwd.dwd_trade_order_detail_di
+WHERE dt >= '20250101' AND dt <= '20250130'
+    AND order_status = 'paid'
+ORDER BY order_amount DESC
+LIMIT 5;`,
+  },
+  {
+    id: 3, level: 'beginner',
+    title: '分组聚合',
+    tags: ['GROUP BY','COUNT','AVG'],
+    desc: '按商品类目(category)统计: 商品数量(product_cnt)和平均单价(avg_price, 保留2位小数)，按商品数量降序排列。',
+    hint: 'GROUP BY category, 搭配 COUNT(1) 和 ROUND(AVG(unit_price), 2)',
+    answer: `SELECT
+    category,
+    COUNT(1) AS product_cnt,
+    ROUND(AVG(unit_price), 2) AS avg_price
+FROM dim.dim_product_info_df
+WHERE dt = '20250101'
+GROUP BY category
+ORDER BY product_cnt DESC;`,
+  },
+  {
+    id: 4, level: 'beginner',
+    title: 'HAVING 过滤分组',
+    tags: ['GROUP BY','HAVING'],
+    desc: '查询下单次数(order_cnt)大于等于 3 次的用户 user_id 和下单次数(仅统计 paid 订单)。',
+    hint: 'WHERE dt 范围 AND order_status = \'paid\', GROUP BY user_id HAVING COUNT(1) >= 3',
+    answer: `SELECT
+    user_id,
+    COUNT(1) AS order_cnt
+FROM dwd.dwd_trade_order_detail_di
+WHERE dt >= '20250101' AND dt <= '20250130'
+    AND order_status = 'paid'
+GROUP BY user_id
+HAVING COUNT(1) >= 3;`,
+  },
+  {
+    id: 5, level: 'beginner',
+    title: '字符串函数与 NVL',
+    tags: ['NVL','SUBSTR','CONCAT_WS'],
+    desc: '查询所有用户的 user_id、user_name，用 CONCAT_WS 拼接 city 和 gender(格式"城市-性别"，city 为 NULL 则显示"未知")，用 SUBSTR 截取 reg_date 的年份(前4位)作为 reg_year。',
+    hint: 'NVL(city, \'未知\'), CONCAT_WS(\'-\', ...), SUBSTR(reg_date, 1, 4)',
+    answer: `SELECT
+    user_id,
+    user_name,
+    CONCAT_WS('-', NVL(city, '未知'), gender) AS city_gender,
+    SUBSTR(reg_date, 1, 4) AS reg_year
+FROM dim.dim_user_info_df
+WHERE dt = '20250101';`,
+  },
+  // ---- 中级 ----
+  {
+    id: 6, level: 'intermediate',
+    title: '多表 JOIN(含分区条件)',
+    tags: ['LEFT JOIN','dt规范'],
+    desc: '查询每笔已支付订单的 order_id、user_name、product_name、order_amount。\n规范要求: 事实表 dt 放 WHERE，维度表 dt 放 JOIN ON 子句。',
+    hint: '大表在前(dwd)，小表在后(dim)。维度表 dt 条件写在 ON 子句中: AND b.dt = \'20250101\'',
+    answer: `SELECT
+    a.order_id,
+    b.user_name,
+    c.product_name,
+    a.order_amount
+FROM dwd.dwd_trade_order_detail_di a
+LEFT JOIN dim.dim_user_info_df b
+    ON a.user_id = b.user_id
+    AND b.dt = '20250101'
+LEFT JOIN dim.dim_product_info_df c
+    ON a.product_id = c.product_id
+    AND c.dt = '20250101'
+WHERE a.dt >= '20250101' AND a.dt <= '20250130'
+    AND a.order_status = 'paid';`,
+  },
+  {
+    id: 7, level: 'intermediate',
+    title: '子查询(嵌套 + IN)',
+    tags: ['子查询','IN'],
+    desc: '查询购买过"数码"类目商品的所有用户名(user_name)。\n要求: 子查询中的每张分区表都必须带 dt 条件。',
+    hint: '嵌套 IN 子查询，每层都需要 WHERE dt 条件',
+    answer: `SELECT DISTINCT
+    b.user_name
+FROM dim.dim_user_info_df b
+WHERE b.dt = '20250101'
+    AND b.user_id IN (
+        SELECT a.user_id
+        FROM dwd.dwd_trade_order_detail_di a
+        WHERE a.dt >= '20250101' AND a.dt <= '20250130'
+            AND a.order_status = 'paid'
+            AND a.product_id IN (
+                SELECT product_id
+                FROM dim.dim_product_info_df
+                WHERE dt = '20250101'
+                    AND category = '数码'
+            )
+    );`,
+  },
+  {
+    id: 8, level: 'intermediate',
+    title: 'CASE WHEN 条件分类',
+    tags: ['CASE WHEN'],
+    desc: '按用户年龄分组统计人数(user_cnt): 18-25岁"青年"，26-35岁"中青年"，36岁及以上"中年"。',
+    hint: 'CASE WHEN age BETWEEN 18 AND 25 THEN ... END AS age_group, 然后 GROUP BY 同样的 CASE 表达式',
+    answer: `SELECT
+    CASE
+        WHEN age BETWEEN 18 AND 25 THEN '青年'
+        WHEN age BETWEEN 26 AND 35 THEN '中青年'
+        ELSE '中年'
+    END AS age_group,
+    COUNT(1) AS user_cnt
+FROM dim.dim_user_info_df
+WHERE dt = '20250101'
+GROUP BY
+    CASE
+        WHEN age BETWEEN 18 AND 25 THEN '青年'
+        WHEN age BETWEEN 26 AND 35 THEN '中青年'
+        ELSE '中年'
+    END
+ORDER BY user_cnt DESC;`,
+  },
+  {
+    id: 9, level: 'intermediate',
+    title: 'CTE 公用表表达式',
+    tags: ['WITH...AS','CTE'],
+    desc: '使用 CTE 先计算每个用户的总消费金额 total_amount(仅 paid)，然后 JOIN 用户维度表找出消费 Top5，显示 user_name 和 total_amount。\nCTE 中的分区表也必须带 dt 条件。',
+    hint: 'WITH user_spend AS (SELECT ... WHERE dt 范围 AND order_status = \'paid\' GROUP BY user_id)',
+    answer: `WITH user_spend AS (
+    SELECT
+        user_id,
+        SUM(order_amount) AS total_amount
+    FROM dwd.dwd_trade_order_detail_di
+    WHERE dt >= '20250101' AND dt <= '20250130'
+        AND order_status = 'paid'
+    GROUP BY user_id
+)
+SELECT
+    b.user_name,
+    a.total_amount
+FROM user_spend a
+INNER JOIN dim.dim_user_info_df b
+    ON a.user_id = b.user_id
+    AND b.dt = '20250101'
+ORDER BY a.total_amount DESC
+LIMIT 5;`,
+  },
+  {
+    id: 10, level: 'intermediate',
+    title: '日期函数 + 复合条件',
+    tags: ['DATEDIFF','DATE_ADD'],
+    desc: '查询注册日期在 2023-01-01 之后，且注册至今(以 2025-01-30 为基准)超过 365 天的用户。显示 user_name、reg_date、注册天数(days_since_reg)。',
+    hint: 'DATEDIFF(\'2025-01-30\', reg_date) 计算天数差',
+    answer: `SELECT
+    user_name,
+    reg_date,
+    DATEDIFF('2025-01-30', reg_date) AS days_since_reg
+FROM dim.dim_user_info_df
+WHERE dt = '20250101'
+    AND reg_date > '2023-01-01'
+    AND DATEDIFF('2025-01-30', reg_date) > 365;`,
+  },
+  // ---- 高级 ----
+  {
+    id: 11, level: 'advanced',
+    title: '窗口函数 ROW_NUMBER / RANK',
+    tags: ['ROW_NUMBER','RANK'],
+    desc: '对已支付订单，按用户分组、按订单金额降序排名。显示 user_id、order_id、order_amount 及组内排名(rn 和 rnk)。只展示每个用户排名前 2 的订单。',
+    hint: 'ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY order_amount DESC) AS rn, 外层 WHERE rn <= 2',
+    answer: `SELECT
+    user_id,
+    order_id,
+    order_amount,
+    rn,
+    rnk
+FROM (
+    SELECT
+        user_id,
+        order_id,
+        order_amount,
+        ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY order_amount DESC) AS rn,
+        RANK() OVER (PARTITION BY user_id ORDER BY order_amount DESC) AS rnk
+    FROM dwd.dwd_trade_order_detail_di
+    WHERE dt >= '20250101' AND dt <= '20250130'
+        AND order_status = 'paid'
+) t
+WHERE rn <= 2
+ORDER BY user_id, rn;`,
+  },
+  {
+    id: 12, level: 'advanced',
+    title: '窗口函数 SUM / AVG OVER',
+    tags: ['SUM OVER','累计计算'],
+    desc: '按支付时间排序，计算已支付订单的累计金额(running_total)和移动平均金额(moving_avg, 当前行及前2行, 保留2位小数)。',
+    hint: 'SUM(order_amount) OVER (ORDER BY pay_time ROWS UNBOUNDED PRECEDING)',
+    answer: `SELECT
+    order_id,
+    pay_time,
+    order_amount,
+    SUM(order_amount) OVER (ORDER BY pay_time ROWS UNBOUNDED PRECEDING) AS running_total,
+    ROUND(AVG(order_amount) OVER (ORDER BY pay_time ROWS BETWEEN 2 PRECEDING AND CURRENT ROW), 2) AS moving_avg
+FROM dwd.dwd_trade_order_detail_di
+WHERE dt >= '20250101' AND dt <= '20250130'
+    AND order_status = 'paid'
+ORDER BY pay_time;`,
+  },
+  {
+    id: 13, level: 'advanced',
+    title: '多层嵌套子查询 + JOIN',
+    tags: ['嵌套子查询','JOIN'],
+    desc: '找出消费总金额(paid)高于全平台用户平均消费总金额的用户。显示 user_name、city、total_amount、platform_avg(平台均值, 保留2位)。',
+    hint: '第一层: 每用户消费总额; 第二层: 全平台平均; 外层: 过滤并 JOIN 用户维度表(带 dt)',
+    answer: `SELECT
+    b.user_name,
+    b.city,
+    ua.total_amount,
+    ROUND(overall.avg_amount, 2) AS platform_avg
+FROM (
+    SELECT
+        user_id,
+        SUM(order_amount) AS total_amount
+    FROM dwd.dwd_trade_order_detail_di
+    WHERE dt >= '20250101' AND dt <= '20250130'
+        AND order_status = 'paid'
+    GROUP BY user_id
+) ua
+INNER JOIN dim.dim_user_info_df b
+    ON ua.user_id = b.user_id
+    AND b.dt = '20250101'
+CROSS JOIN (
+    SELECT AVG(total_amount) AS avg_amount
+    FROM (
+        SELECT user_id, SUM(order_amount) AS total_amount
+        FROM dwd.dwd_trade_order_detail_di
+        WHERE dt >= '20250101' AND dt <= '20250130'
+            AND order_status = 'paid'
+        GROUP BY user_id
+    )
+) overall
+WHERE ua.total_amount > overall.avg_amount
+ORDER BY ua.total_amount DESC;`,
+  },
+  {
+    id: 14, level: 'advanced',
+    title: 'UNION ALL 与分组汇总',
+    tags: ['UNION ALL','汇总'],
+    desc: '分别统计每个商品类目和每个城市的销售额(仅 paid)，用 UNION ALL 合并为一张报表。结果含: dim_type(维度类型)、dim_value(维度值)、total_sales(销售总额)。',
+    hint: '两个 SELECT 分别 JOIN 不同维度表，按 category / city GROUP BY，UNION ALL 合并',
+    answer: `SELECT
+    '类目' AS dim_type,
+    c.category AS dim_value,
+    SUM(a.order_amount) AS total_sales
+FROM dwd.dwd_trade_order_detail_di a
+INNER JOIN dim.dim_product_info_df c
+    ON a.product_id = c.product_id
+    AND c.dt = '20250101'
+WHERE a.dt >= '20250101' AND a.dt <= '20250130'
+    AND a.order_status = 'paid'
+GROUP BY c.category
+
+UNION ALL
+
+SELECT
+    '城市' AS dim_type,
+    b.city AS dim_value,
+    SUM(a.order_amount) AS total_sales
+FROM dwd.dwd_trade_order_detail_di a
+INNER JOIN dim.dim_user_info_df b
+    ON a.user_id = b.user_id
+    AND b.dt = '20250101'
+WHERE a.dt >= '20250101' AND a.dt <= '20250130'
+    AND a.order_status = 'paid'
+GROUP BY b.city
+
+ORDER BY dim_type, total_sales DESC;`,
+  },
+  {
+    id: 15, level: 'advanced',
+    title: '综合题: CTE + 窗口函数 + CASE WHEN',
+    tags: ['CTE','窗口函数','CASE WHEN'],
+    desc: '综合分析:\n1. CTE 计算每个用户的总消费金额(paid)\n2. RANK 窗口函数计算消费排名(spend_rank)\n3. CASE WHEN 将排名分为 Top3 / Top10 / 其他(rank_level)\n4. 显示 user_name、city、total_amount、spend_rank、rank_level',
+    hint: '先 CTE 聚合消费(带 dt)，再 CTE JOIN 用户维度表(带 dt) + 窗口排名，最后 SELECT + CASE WHEN',
+    answer: `WITH user_spend AS (
+    SELECT
+        user_id,
+        SUM(order_amount) AS total_amount
+    FROM dwd.dwd_trade_order_detail_di
+    WHERE dt >= '20250101' AND dt <= '20250130'
+        AND order_status = 'paid'
+    GROUP BY user_id
+),
+user_ranked AS (
+    SELECT
+        a.user_id,
+        b.user_name,
+        b.city,
+        a.total_amount,
+        RANK() OVER (ORDER BY a.total_amount DESC) AS spend_rank
+    FROM user_spend a
+    INNER JOIN dim.dim_user_info_df b
+        ON a.user_id = b.user_id
+        AND b.dt = '20250101'
+)
+SELECT
+    user_name,
+    city,
+    total_amount,
+    spend_rank,
+    CASE
+        WHEN spend_rank <= 3 THEN 'Top3'
+        WHEN spend_rank <= 10 THEN 'Top10'
+        ELSE '其他'
+    END AS rank_level
+FROM user_ranked
+ORDER BY spend_rank;`,
+  },
+  // ---- 新增题目 ----
+  {
+    id: 16, level: 'beginner',
+    title: 'DISTINCT 去重查询',
+    tags: ['DISTINCT'],
+    desc: '查询所有用户所在的不重复城市列表。\n注意: 使用 DISTINCT 关键字去重。',
+    hint: 'SELECT DISTINCT city FROM dim.dim_user_info_df WHERE dt = \'20250101\'',
+    answer: `SELECT DISTINCT
+    city
+FROM dim.dim_user_info_df
+WHERE dt = '20250101'
+ORDER BY city;`,
+  },
+  {
+    id: 17, level: 'beginner',
+    title: 'LIKE 模糊匹配',
+    tags: ['LIKE','%'],
+    desc: '查询商品名称中包含"运动"的所有商品，显示 product_name、category、unit_price。',
+    hint: 'WHERE product_name LIKE \'%运动%\'',
+    answer: `SELECT
+    product_name,
+    category,
+    unit_price
+FROM dim.dim_product_info_df
+WHERE dt = '20250101'
+    AND product_name LIKE '%运动%';`,
+  },
+  {
+    id: 18, level: 'intermediate',
+    title: 'BETWEEN + IS NULL 综合',
+    tags: ['BETWEEN','IS NULL'],
+    desc: '查询年龄在 25 到 35 之间、且 city 不为 NULL 的用户数量(user_cnt)和平均年龄(avg_age, 保留1位小数)。',
+    hint: 'WHERE age BETWEEN 25 AND 35 AND city IS NOT NULL',
+    answer: `SELECT
+    COUNT(1) AS user_cnt,
+    ROUND(AVG(age), 1) AS avg_age
+FROM dim.dim_user_info_df
+WHERE dt = '20250101'
+    AND age BETWEEN 25 AND 35
+    AND city IS NOT NULL;`,
+  },
+  {
+    id: 19, level: 'intermediate',
+    title: '日期函数综合',
+    tags: ['SUBSTR','GROUP BY','日期'],
+    desc: '按天统计已支付订单数(order_cnt)和总金额(total_amount, 保留2位小数)。\n使用 SUBSTR 从 pay_time 中提取日期(前10位)作为 pay_date，按 pay_date 排序。',
+    hint: 'SUBSTR(pay_time, 1, 10) AS pay_date',
+    answer: `SELECT
+    SUBSTR(pay_time, 1, 10) AS pay_date,
+    COUNT(1) AS order_cnt,
+    ROUND(SUM(order_amount), 2) AS total_amount
+FROM dwd.dwd_trade_order_detail_di
+WHERE dt >= '20250101' AND dt <= '20250130'
+    AND order_status = 'paid'
+    AND pay_time IS NOT NULL
+    AND order_amount IS NOT NULL
+GROUP BY SUBSTR(pay_time, 1, 10)
+ORDER BY pay_date;`,
+  },
+  {
+    id: 20, level: 'advanced',
+    title: 'LAG/LEAD 日环比分析',
+    tags: ['LAG','窗口函数'],
+    desc: '按天统计已支付订单总金额，并计算日环比增长率(dod_rate, 保留2位小数, 百分比)。\n日环比 = (当天 - 前一天) / 前一天 * 100。',
+    hint: 'LAG(daily_amount, 1) OVER (ORDER BY pay_date) 获取前一天金额',
+    answer: `WITH daily AS (
+    SELECT
+        SUBSTR(pay_time, 1, 10) AS pay_date,
+        ROUND(SUM(order_amount), 2) AS daily_amount
+    FROM dwd.dwd_trade_order_detail_di
+    WHERE dt >= '20250101' AND dt <= '20250130'
+        AND order_status = 'paid'
+        AND pay_time IS NOT NULL
+        AND order_amount IS NOT NULL
+    GROUP BY SUBSTR(pay_time, 1, 10)
+)
+SELECT
+    pay_date,
+    daily_amount,
+    LAG(daily_amount, 1) OVER (ORDER BY pay_date) AS prev_amount,
+    ROUND(
+        (daily_amount - LAG(daily_amount, 1) OVER (ORDER BY pay_date))
+        * 100.0
+        / LAG(daily_amount, 1) OVER (ORDER BY pay_date),
+        2
+    ) AS dod_rate
+FROM daily
+ORDER BY pay_date;`,
+  },
+  {
+    id: 21, level: 'advanced',
+    title: '连续登录N天(经典面试题)',
+    tags: ['ROW_NUMBER','DATE_SUB'],
+    desc: '找出连续登录 3 天及以上的用户，显示 user_id、连续登录开始日期(start_date)、结束日期(end_date)、连续天数(consecutive_days)。\n使用用户登录表 dwd.dwd_user_login_di。',
+    hint: '对每个用户按登录日期排序编号，用 DATE_SUB(login_date, rn) 得到分组标识，相同标识即为连续登录',
+    answer: `WITH login_ranked AS (
+    SELECT DISTINCT
+        user_id,
+        login_date,
+        ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY login_date) AS rn
+    FROM dwd.dwd_user_login_di
+    WHERE dt >= '20250101' AND dt <= '20250130'
+),
+login_grouped AS (
+    SELECT
+        user_id,
+        login_date,
+        DATE_SUB(login_date, rn) AS grp
+    FROM login_ranked
+)
+SELECT
+    user_id,
+    MIN(login_date) AS start_date,
+    MAX(login_date) AS end_date,
+    COUNT(1) AS consecutive_days
+FROM login_grouped
+GROUP BY user_id, grp
+HAVING COUNT(1) >= 3
+ORDER BY user_id, start_date;`,
+  },
+  {
+    id: 22, level: 'advanced',
+    title: '次日留存率(经典面试题)',
+    tags: ['留存率','LEFT JOIN'],
+    desc: '计算每天的次日留存率: 当天登录的用户中，第二天也登录的比例。\n显示 login_date、当日用户数(login_users)、次日留存用户数(retained_users)、次日留存率(retention_rate, 保留2位小数, 百分比)。',
+    hint: '用 LEFT JOIN 自关联，连接条件为同一用户且日期差1天',
+    answer: `WITH daily_login AS (
+    SELECT DISTINCT
+        user_id,
+        login_date
+    FROM dwd.dwd_user_login_di
+    WHERE dt >= '20250101' AND dt <= '20250130'
+)
+SELECT
+    a.login_date,
+    COUNT(DISTINCT a.user_id) AS login_users,
+    COUNT(DISTINCT b.user_id) AS retained_users,
+    ROUND(
+        COUNT(DISTINCT b.user_id) * 100.0
+        / COUNT(DISTINCT a.user_id),
+        2
+    ) AS retention_rate
+FROM daily_login a
+LEFT JOIN daily_login b
+    ON a.user_id = b.user_id
+    AND b.login_date = DATE_ADD(a.login_date, 1)
+GROUP BY a.login_date
+ORDER BY a.login_date;`,
+  },
+  {
+    id: 23, level: 'advanced',
+    title: '直播间同时在线人数最大值',
+    tags: ['UNION ALL','窗口函数','SUM OVER'],
+    desc: '基于直播间进出记录表 dwd.dwd_live_room_log_di，计算每个直播间的同时在线人数最大值。\n\n思路口诀：\n  进加一，出减一，\n  时间排序莫迟疑，\n  累加求和取最大，\n  峰值人数就是它。\n\n输出字段：room_id、max_online（最大同时在线人数）。\n按 room_id 排序。',
+    hint: '进入 +1、离开 -1，UNION ALL 合并后按时间排序，用 SUM() OVER() 累加，再按直播间取 MAX',
+    answer: `-- 直播间同时在线人数最大值
+-- 口诀: 进加一，出减一，时间排序莫迟疑，
+--       累加求和取最大，峰值人数就是它。
+
+-- 第一步: 进加一，出减一 → 标记进出事件
+-- 第二步: 时间排序莫迟疑 → UNION ALL 合并, 按时间排序
+-- 第三步: 累加求和取最大 → SUM OVER 累加, MAX 取峰值
+SELECT
+    room_id,
+    MAX(online_cnt) AS max_online
+FROM (
+    SELECT
+        room_id,
+        action_time,
+        SUM(flag) OVER (
+            PARTITION BY room_id
+            ORDER BY action_time
+        ) AS online_cnt
+    FROM (
+        SELECT
+            room_id,
+            action_time,
+            CASE WHEN action = 'enter' THEN 1 ELSE -1 END AS flag
+        FROM dwd.dwd_live_room_log_di
+        WHERE dt = '20250115'
+    ) t1
+) t2
+GROUP BY room_id
+ORDER BY room_id;`,
+  },
+  {
+    id: 24, level: 'advanced',
+    title: '求相互关注的用户对数',
+    tags: ['自关联','JOIN','去重'],
+    desc: '基于用户关注关系表 dwd.dwd_user_follow_di，找出互相关注的用户有多少对。\n\n思路口诀：\n  A关B，B关A，\n  JOIN 反转就能查，\n  去个重，小在前，\n  互粉对数到手啦。\n\n输出字段：mutual_pairs（互关对数）。',
+    hint: '自关联: a.user_id = b.follow_user_id AND a.follow_user_id = b.user_id，用 a.user_id < a.follow_user_id 去重',
+    answer: `-- 求相互关注的用户对数
+-- 口诀: A关B，B关A，JOIN 反转就能查，
+--       去个重，小在前，互粉对数到手啦。
+
+-- 第一步: A关B，B关A → 自关联, 正反方向匹配
+-- 第二步: JOIN 反转就能查 → a.user_id=b.follow_user_id AND a.follow_user_id=b.user_id
+-- 第三步: 去个重，小在前 → a.user_id < a.follow_user_id 保证每对只算一次
+SELECT
+    COUNT(*) AS mutual_pairs
+FROM dwd.dwd_user_follow_di a
+INNER JOIN dwd.dwd_user_follow_di b
+    ON a.user_id = b.follow_user_id
+    AND a.follow_user_id = b.user_id
+WHERE a.dt = '20250115'
+    AND b.dt = '20250115'
+    AND a.user_id < a.follow_user_id;`,
+  },
+];
+
+// ============================================================
+// Hive 函数参考 — 基于 Hive常用函数手册
+// ============================================================
+const SYNTAX_REF = [
+  {
+    title: '第一章 数值函数',
+    items: [
+      { label: '1.1 加法 +', badge: 'ok', code: "SELECT 10 + 3;  -- 13", note: '语法: A + B' },
+      { label: '1.2 减法 -', badge: 'ok', code: "SELECT 10 - 3;  -- 7", note: '语法: A - B' },
+      { label: '1.3 乘法 *', badge: 'ok', code: "SELECT 10 * 3;  -- 30", note: '语法: A * B' },
+      { label: '1.4 除法 /', badge: 'ok', code: "SELECT 10 / 3;  -- 3.3333...\n-- 返回浮点数, 想取整用 floor() 或 cast(... AS int)", note: '除法返回的是浮点数结果，不是整数' },
+      { label: '1.5 取余 % / mod', badge: 'ok', code: "SELECT 10 % 3;     -- 1\nSELECT mod(10, 3); -- 1", note: '% 和 mod() 等价。除法给你"商"，取余给你"剩下的"' },
+      { label: '1.6 四舍五入 round', badge: 'ok', code: "SELECT ROUND(3.1415, 2);  -- 3.14\nSELECT ROUND(3.5);       -- 4", note: '语法: round(num, d)。d省略则取整' },
+      { label: '1.7 向上取整 ceil', badge: 'ok', code: "SELECT CEIL(3.1);  -- 4", note: '返回 ≥ num 的最小整数' },
+      { label: '1.8 向下取整 floor', badge: 'ok', code: "SELECT FLOOR(3.9);  -- 3", note: '返回 ≤ num 的最大整数' },
+      { label: '1.9 绝对值 abs', badge: 'ok', code: "SELECT ABS(-5);  -- 5", note: '返回绝对值' },
+      { label: '1.10 幂运算 pow', badge: 'ok', code: "SELECT POW(2, 3);  -- 8.0", note: '语法: pow(a, b)。返回 a 的 b 次方' },
+      { label: '1.11 开平方 sqrt', badge: 'ok', code: "SELECT SQRT(16);  -- 4.0", note: '语法: sqrt(num)' },
+      { label: '1.12 最大值/最小值 greatest/least', badge: 'ok', code: "SELECT GREATEST(1, 5, 3);  -- 5\nSELECT LEAST(1, 5, 3);     -- 1", note: '从多个值中取最大/最小' },
+      { label: '1.13 随机数 rand', badge: 'ok', code: "SELECT RAND();  -- 0.731...(0~1随机数)", note: '语法: rand([seed])。指定seed可复现' },
+    ]
+  },
+  {
+    title: '第二章 条件函数',
+    items: [
+      { label: '2.1 条件判断 if', badge: 'ok', code: "SELECT IF(score >= 60, '及格', '不及格');", note: '语法: if(条件, 真值, 假值)' },
+      { label: '2.2 多条件分支 CASE WHEN', badge: 'ok', code: "SELECT CASE\n  WHEN age < 25 THEN '青年'\n  WHEN age < 35 THEN '中青年'\n  ELSE '中年'\nEND", note: '语法: CASE WHEN ... THEN ... ELSE ... END' },
+      { label: '2.3 第一个非NULL coalesce', badge: 'ok', code: "SELECT COALESCE(NULL, NULL, 44, 55);\n-- 44 (返回第一个非NULL值)", note: '语法: coalesce(v1, v2, ...)' },
+      { label: '2.4 空值替换 nvl', badge: 'ok', code: "SELECT NVL(city, '未知');", note: '语法: nvl(val, default)。val为NULL则返回default' },
+    ]
+  },
+  {
+    title: '第三章 聚合函数',
+    items: [
+      { label: '3.1 计数 count', badge: 'ok', code: "COUNT(*)           -- 总行数(含NULL)\nCOUNT(col)         -- 非NULL行数\nCOUNT(DISTINCT col) -- 去重计数", note: 'count(col)不计NULL' },
+      { label: '3.2 求和 sum', badge: 'ok', code: "SELECT SUM(order_amount)\nFROM dwd.dwd_trade_order_detail_di\nWHERE dt = '20250115';", note: '忽略NULL' },
+      { label: '3.3 平均值 avg', badge: 'ok', code: "SELECT AVG(order_amount)\nFROM dwd.dwd_trade_order_detail_di\nWHERE dt = '20250115';", note: '忽略NULL' },
+      { label: '3.4 最大/最小值 max/min', badge: 'ok', code: "SELECT MAX(order_amount), MIN(order_amount)\nFROM dwd.dwd_trade_order_detail_di\nWHERE dt = '20250115';", note: '取列中最大/最小值' },
+      { label: '3.5 收集为数组 collect_list/set', badge: 'ok', code: "-- Hive:\ncollect_list(city)  -- 不去重 ['北京','上海','北京']\ncollect_set(city)   -- 去重 ['北京','上海']", note: 'collect_list含重复, collect_set去重' },
+      { label: '3.6 百分位数 percentile', badge: 'ok', code: "percentile(score, 0.5)         -- 中位数(仅整数列)\npercentile_approx(amount, 0.99) -- 近似百分位(支持浮点)", note: 'percentile仅整数, percentile_approx支持浮点' },
+      { label: '3.7 标准差/方差 stddev/variance', badge: 'ok', code: "SELECT STDDEV(col), VARIANCE(col)\nFROM table;", note: '标准差 / 方差' },
+      { label: '⚠️ count(distinct) 性能问题', badge: 'ref', code: "-- 不推荐(例行脚本中):\nSELECT count(distinct user_id) FROM orders;\n-- 推荐替代写法:\nSELECT count(1)\nFROM (SELECT user_id FROM orders GROUP BY user_id) t;", note: '会汇总到1个Reducer, 大数据量易倾斜OOM' },
+    ]
+  },
+  {
+    title: '第四章 字符串函数',
+    items: [
+      { label: '4.1 字符串长度 length', badge: 'ok', code: "SELECT LENGTH('hello');  -- 5", note: '返回字符串长度' },
+      { label: '4.2 字符串拼接 concat', badge: 'ok', code: "SELECT CONCAT('a', 'b', 'c');  -- 'abc'", note: '支持任意个参数' },
+      { label: '4.3 带分隔符拼接 concat_ws', badge: 'ok', code: "SELECT CONCAT_WS('-', '2024', '01', '01');\n-- '2024-01-01'", note: '自动跳过NULL' },
+      { label: '4.4 截取子串 substr', badge: 'ok', code: "SELECT SUBSTR('hello', 2, 3);  -- 'ell'\nSELECT SUBSTR('hello', -2);    -- 'lo'", note: 'pos从1开始, 负数从末尾计算' },
+      { label: '4.5 大小写转换 upper/lower', badge: 'ok', code: "SELECT UPPER('hello');  -- 'HELLO'\nSELECT LOWER('HELLO');  -- 'hello'", note: '大写 / 小写' },
+      { label: '4.6 去空格 trim/ltrim/rtrim', badge: 'ok', code: "SELECT TRIM('  hi  ');   -- 'hi'\nSELECT LTRIM('  hi  ');  -- 'hi  '\nSELECT RTRIM('  hi  ');  -- '  hi'", note: '去两边/左边/右边空格' },
+      { label: '4.7 字符串替换 replace', badge: 'ok', code: "SELECT REPLACE('2024-01-01', '-', '');\n-- '20240101'", note: '语法: replace(str, old, new)' },
+      { label: '4.8 正则替换 regexp_replace', badge: 'ok', code: "SELECT REGEXP_REPLACE('a1b2', '\\\\d', '');\n-- 'ab'", note: '语法: regexp_replace(str, regex, rep)' },
+      { label: '4.9 正则提取 regexp_extract', badge: 'ok', code: "SELECT REGEXP_EXTRACT('age:25', ':(\\\\d+)', 1);\n-- '25'", note: '语法: regexp_extract(str, regex, idx)' },
+      { label: '4.10 分割字符串 split', badge: 'ok', code: "SELECT SPLIT('a,b,c', ',');\n-- ['a','b','c']", note: '返回数组' },
+      { label: '4.11 子串位置 instr', badge: 'ok', code: "SELECT INSTR('hello', 'll');  -- 3", note: '返回子串首次出现的位置(从1开始)' },
+      { label: '4.12 左/右填充 lpad/rpad', badge: 'ok', code: "SELECT LPAD('5', 3, '0');  -- '005'\nSELECT RPAD('5', 3, '0');  -- '500'", note: '语法: lpad(str, len, pad)' },
+      { label: '4.13 反转字符串 reverse', badge: 'ok', code: "SELECT REVERSE('abc');  -- 'cba'", note: '反转字符串' },
+      { label: '4.14 JSON提取 get_json_object', badge: 'ok', code: "SELECT GET_JSON_OBJECT(\n  '{\"name\":\"tom\"}', '$.name');\n-- 'tom'", note: '语法: get_json_object(json, path)' },
+    ]
+  },
+  {
+    title: '第五章 判断与匹配',
+    items: [
+      { label: '5.1 空值判断 IS NULL', badge: 'ok', code: "WHERE name IS NULL\n-- 不能用 = NULL 判断!", note: '判断是否为NULL' },
+      { label: '5.2 非空判断 IS NOT NULL', badge: 'ok', code: "WHERE name IS NOT NULL", note: '判断是否不为NULL' },
+      { label: '5.3 模糊匹配 LIKE', badge: 'ok', code: "WHERE name LIKE '张%'   -- 以张开头\nWHERE name LIKE '_明%'  -- 第二个字是明", note: '% 任意多字符, _ 单个字符' },
+      { label: '5.4 NOT LIKE', badge: 'ok', code: "WHERE name NOT LIKE '%test%'", note: '不匹配' },
+      { label: '5.5 正则匹配 RLIKE / REGEXP', badge: 'ok', code: "WHERE phone RLIKE '^1[3-9]\\\\d{9}$'", note: 'RLIKE 和 REGEXP 功能相同' },
+      { label: '5.6 列表包含 IN / NOT IN', badge: 'ok', code: "WHERE status IN ('A', 'B')\nWHERE status NOT IN ('X', 'Y')", note: '在/不在指定值列表中' },
+      { label: '5.7 范围判断 BETWEEN', badge: 'ok', code: "WHERE age BETWEEN 18 AND 60\n-- 等价: age >= 18 AND age <= 60", note: '含两端' },
+    ]
+  },
+  {
+    title: '第六章 类型转换函数',
+    items: [
+      { label: '6.1 通用类型转换 cast', badge: 'ok', code: "SELECT CAST('123' AS INT);          -- 123\nSELECT CAST(3.1415 AS DECIMAL(10,2)); -- 3.14\nSELECT CAST(123 AS STRING);         -- '123'", note: '语法: cast(val AS type)' },
+      { label: '6.2 转二进制 binary', badge: 'ref', code: "SELECT BINARY('hello');", note: '将输入转换成二进制' },
+      { label: '6.3 转布尔值 boolean', badge: 'ref', code: "SELECT BOOLEAN(1);  -- true", note: '将输入转换成布尔值' },
+    ]
+  },
+  {
+    title: '第七章 日期函数',
+    items: [
+      { label: '7.1 当前日期/时间戳', badge: 'ok', code: "SELECT CURRENT_DATE();       -- '2024-01-15'\nSELECT CURRENT_TIMESTAMP(); -- '2024-01-15 10:30:00'", note: '获取当前日期 / 时间戳' },
+      { label: '7.2 提取日期 to_date', badge: 'ok', code: "SELECT TO_DATE('2024-01-15 10:30:00');\n-- '2024-01-15'", note: '从时间戳中提取日期部分' },
+      { label: '7.3 年/月/日 year/month/day', badge: 'ok', code: "SELECT YEAR('2024-01-15');   -- 2024\nSELECT MONTH('2024-01-15');  -- 1\nSELECT DAY('2024-01-15');    -- 15", note: '提取年/月/日' },
+      { label: '7.4 时/分/秒 hour/minute/second', badge: 'ok', code: "SELECT HOUR('2024-01-15 10:30:00');   -- 10\nSELECT MINUTE('2024-01-15 10:30:00'); -- 30\nSELECT SECOND('2024-01-15 10:30:00'); -- 0", note: '提取时/分/秒' },
+      { label: '7.5 日期差 datediff', badge: 'ok', code: "SELECT DATEDIFF('2024-01-15', '2024-01-01');\n-- 14", note: '语法: datediff(end, start)。返回天数差' },
+      { label: '7.6 日期加减 date_add/date_sub', badge: 'ok', code: "SELECT DATE_ADD('2024-01-01', 7);  -- '2024-01-08'\nSELECT DATE_SUB('2024-01-15', 5);  -- '2024-01-10'", note: '加/减 n 天' },
+      { label: '7.7 月份差 months_between', badge: 'ok', code: "SELECT MONTHS_BETWEEN('2024-03-01', '2024-01-01');\n-- 2.0", note: '返回两个日期之间的月数' },
+      { label: '7.8 加月份 add_months', badge: 'ok', code: "SELECT ADD_MONTHS('2024-01-31', 1);\n-- '2024-02-29'", note: '自动处理月末' },
+      { label: '7.9 月末日期 last_day', badge: 'ok', code: "SELECT LAST_DAY('2024-01-15');\n-- '2024-01-31'", note: '返回当月最后一天' },
+      { label: '7.10 下一个星期X next_day', badge: 'ok', code: "SELECT NEXT_DAY('2024-01-15', 'MO');\n-- '2024-01-22'", note: '返回下一个指定星期几的日期' },
+      { label: '7.11 截断日期 trunc', badge: 'ok', code: "SELECT TRUNC('2024-01-15', 'MM');  -- '2024-01-01'\nSELECT TRUNC('2024-01-15', 'YY');  -- '2024-01-01'", note: '截断到月初/年初' },
+      { label: '7.12 日期格式化 date_format', badge: 'ok', code: "SELECT DATE_FORMAT('2024-01-15', 'yyyyMMdd');\n-- '20240115'", note: '按指定格式输出日期字符串' },
+      { label: '7.13 时间戳互转 from_unixtime/unix_timestamp', badge: 'ok', code: "SELECT FROM_UNIXTIME(1705286400, 'yyyy-MM-dd');\n-- '2024-01-15'\nSELECT UNIX_TIMESTAMP('2024-01-15', 'yyyy-MM-dd');\n-- 1705286400", note: 'UNIX时间戳 ↔ 日期字符串' },
+    ]
+  },
+  {
+    title: '第八章 窗口函数',
+    items: [
+      { label: '窗口函数基本语法', badge: 'ok', code: "函数 OVER (\n  [PARTITION BY col1, col2, ...]\n  [ORDER BY col3, col4, ...]\n  [窗口子句]\n)", note: 'PARTITION BY 分区, ORDER BY 排序, 窗口子句限定范围' },
+      { label: '8.1 行号 row_number', badge: 'ok', code: "ROW_NUMBER() OVER (\n  PARTITION BY user_id\n  ORDER BY order_amount DESC\n) AS rn\n-- 1,2,3,4 (不并列)", note: '连续编号, 最常用, TopN必备' },
+      { label: '8.2 跳跃排名 rank', badge: 'ok', code: "RANK() OVER (ORDER BY score DESC)\n-- 并列跳号: 1,1,3,4", note: '相同值排名相同, 后续排名跳过' },
+      { label: '8.3 密集排名 dense_rank', badge: 'ok', code: "DENSE_RANK() OVER (ORDER BY score DESC)\n-- 并列不跳: 1,1,2,3", note: '相同值排名相同, 后续排名连续' },
+      { label: '8.4 等份分桶 ntile', badge: 'ok', code: "NTILE(4) OVER (ORDER BY score DESC)\n-- 分成4组, 返回桶号 1~4", note: '将分区分成n个等份桶' },
+      { label: '8.5 累积分布 cume_dist', badge: 'ok', code: "CUME_DIST() OVER (ORDER BY score)\n-- ≤当前值的行数 / 总行数, 值域0~1", note: '累积分布比例' },
+      { label: '8.6 百分比排名 percent_rank', badge: 'ok', code: "PERCENT_RANK() OVER (ORDER BY score)\n-- (rank-1) / (total-1), 值域0~1", note: '百分比排名' },
+      { label: '8.7 向前偏移 lag', badge: 'ok', code: "LAG(pay_time, 1, '无') OVER (\n  PARTITION BY user_id ORDER BY pay_time\n)\n-- 取前1行的值, 默认值'无'", note: '语法: lag(col, n, default)' },
+      { label: '8.8 向后偏移 lead', badge: 'ok', code: "LEAD(pay_time, 1) OVER (\n  PARTITION BY user_id ORDER BY pay_time\n)\n-- 取后1行的值", note: '语法: lead(col, n, default)' },
+      { label: '8.9 窗口首值 first_value', badge: 'ok', code: "FIRST_VALUE(order_amount) OVER (\n  PARTITION BY user_id ORDER BY pay_time\n)", note: '窗口内第一个值' },
+      { label: '8.10 窗口末值 last_value', badge: 'ok', code: "LAST_VALUE(order_amount) OVER (\n  PARTITION BY user_id ORDER BY pay_time\n  ROWS BETWEEN UNBOUNDED PRECEDING\n    AND UNBOUNDED FOLLOWING\n)", note: '需指定窗口范围才能取到真正的最后值' },
+      { label: '8.11 窗口聚合 SUM/AVG/COUNT OVER', badge: 'ok', code: "SUM(amount) OVER (ORDER BY pay_time\n  ROWS UNBOUNDED PRECEDING) AS running_total\n-- 累计求和 / 滑动平均 / 窗口计数", note: '窗口内的聚合' },
+      { label: '8.12 窗口帧 Window Frame', badge: 'ok', code: "ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW  -- 默认\nROWS BETWEEN 6 PRECEDING AND CURRENT ROW           -- 前6行\nROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING   -- 到末尾\nROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING -- 整个分区", note: 'PRECEDING=前, FOLLOWING=后, CURRENT ROW=当前' },
+    ]
+  },
+  {
+    title: '第九章 表生成函数（行列转换）',
+    items: [
+      { label: '9.1 数组展开 explode(array)', badge: 'ok', code: "SELECT user_id, tag\nFROM user_tags\nLATERAL VIEW explode(split(tags, ',')) t AS tag;", note: '一行变多行, 配合 LATERAL VIEW 使用' },
+      { label: '9.2 Map展开 explode(map)', badge: 'ok', code: "SELECT explode(map('k1','v1','k2','v2'));\n-- k1 v1 / k2 v2 (每行一个键值对)", note: '每个键值对生成一行(key列+value列)' },
+      { label: '9.3 带索引展开 posexplode（面试重点）', badge: 'ok', code: "SELECT user_id, pos, tag\nFROM user_tags\nLATERAL VIEW posexplode(split(tags, ',')) t AS pos, tag;\n-- 比explode多返回一个位置索引(从0开始)", note: '需要元素顺序/两数组按位置对应时使用' },
+      { label: '9.4 多列转多行 stack', badge: 'ok', code: "SELECT user_id, metric_name, metric_value\nFROM user_metrics\nLATERAL VIEW stack(3,\n  'pv',pv, 'uv',uv, 'gmv',gmv\n) t AS metric_name, metric_value;", note: '语法: stack(n, k1,v1, k2,v2, ...)' },
+      { label: '9.5 LATERAL VIEW 侧视图', badge: 'ok', code: "SELECT a.user_id, t.tag\nFROM table a\nLATERAL VIEW explode(a.tags) t AS tag;", note: '配合UDTF将展开结果与原表关联' },
+      { label: '9.6 行转列（多行变一行）', badge: 'ok', code: "SELECT user_id,\n  concat_ws(',', collect_list(tag)) AS tags\nFROM user_tag_detail\nGROUP BY user_id;", note: 'collect_list + concat_ws 经典搭配, 去重用collect_set' },
+    ]
+  },
+  {
+    title: '第十章 集合函数',
+    items: [
+      { label: '10.1 数组/Map大小 size', badge: 'ok', code: "SELECT SIZE(array(1,2,3));  -- 3", note: '返回数组或Map的元素个数' },
+      { label: '10.2 创建数组 array', badge: 'ok', code: "SELECT ARRAY(1, 2, 3);  -- [1,2,3]", note: '语法: array(v1, v2, ...)' },
+      { label: '10.3 数组包含 array_contains', badge: 'ok', code: "SELECT ARRAY_CONTAINS(array(1,2,3), 2);\n-- true", note: '判断数组是否包含某值' },
+      { label: '10.4 数组排序 sort_array', badge: 'ok', code: "SELECT SORT_ARRAY(array(3,1,2));\n-- [1,2,3]", note: '数组排序' },
+      { label: '10.5 创建Map map', badge: 'ok', code: "SELECT MAP('a',1, 'b',2);\n-- {'a':1, 'b':2}", note: '语法: map(k1,v1, k2,v2, ...)' },
+      { label: '10.6 获取Map键/值 map_keys/map_values', badge: 'ok', code: "SELECT MAP_KEYS(map('a',1,'b',2));   -- ['a','b']\nSELECT MAP_VALUES(map('a',1,'b',2)); -- [1,2]", note: '返回所有key / 所有value的数组' },
+      { label: '10.7 字符串转Map str_to_map', badge: 'ok', code: "SELECT STR_TO_MAP('a:1,b:2', ',', ':');\n-- {'a':'1', 'b':'2'}", note: '语法: str_to_map(str, delim1, delim2)' },
+    ]
+  },
+  {
+    title: '第十一章 其他常用函数',
+    items: [
+      { label: '11.1 MD5哈希 md5', badge: 'ok', code: "SELECT MD5('hello');", note: '返回32位MD5哈希字符串' },
+      { label: '11.2 SHA256哈希 sha2', badge: 'ok', code: "SELECT SHA2('hello', 256);", note: '返回SHA256哈希字符串' },
+      { label: '11.3 Base64编解码', badge: 'ok', code: "SELECT BASE64(BINARY('hello'));\nSELECT UNBASE64('aGVsbG8=');", note: 'base64编码 / unbase64解码' },
+      { label: '11.4 哈希整数 hash', badge: 'ok', code: "SELECT HASH(user_id, order_id);", note: '返回哈希整数值, 可用于数据采样' },
+      { label: '11.5 调用Java方法 reflect', badge: 'ref', code: "SELECT REFLECT('java.net.URLDecoder',\n  'decode', url, 'UTF-8');", note: '调用Java静态方法' },
+      { label: '11.6 重复字符串 repeat', badge: 'ok', code: "SELECT REPEAT('ab', 3);  -- 'ababab'", note: '语法: repeat(str, n)' },
+      { label: '11.7 生成空格 space', badge: 'ref', code: "SELECT SPACE(10);  -- 10个空格", note: '语法: space(n)' },
+    ]
+  },
+  {
+    title: 'SQL 开发规范要点',
+    items: [
+      { label: '库名.表名(强制)', badge: 'ok', code: "-- 必须使用 库名.表名 完整格式:\nSELECT * FROM dwd.dwd_trade_order_detail_di\nWHERE dt = '${bizdate}';\n-- 库名: ods / dwd / dws / dim / ads", note: '避免表名冲突, 明确分层' },
+      { label: 'dt 分区条件(强制)', badge: 'ok', code: "-- 所有分区表必须带 dt 条件:\nWHERE dt = '20250101'          -- 精确\nWHERE dt >= '20250101'           -- 范围\n    AND dt <= '20250130'\n-- 严禁: 不带 dt / 对 dt 用函数", note: '避免全表扫描' },
+      { label: 'JOIN 分区规范', badge: 'ok', code: "-- 维度表 dt 放 ON 子句:\nFROM dwd.dwd_trade_order_detail_di a\nLEFT JOIN dim.dim_user_info_df b\n    ON a.user_id = b.user_id\n    AND b.dt = '${bizdate}'\nWHERE a.dt = '${bizdate}';", note: '事实表 dt 在 WHERE, 维度表 dt 在 ON' },
+      { label: '格式规范', badge: 'ok', code: "-- 关键字大写, 字段换行对齐\nSELECT\n    a.order_id,\n    a.order_amount\nFROM table a\nWHERE dt = '20250101'\nGROUP BY\n    a.order_id\nORDER BY\n    a.order_amount DESC;", note: '禁用 SELECT *, 禁用数字 GROUP BY' },
+      { label: 'INSERT 规范', badge: 'ref', code: "INSERT OVERWRITE TABLE\n  dws.dws_trade_user_order_1d\n  PARTITION(dt='${bizdate}')\nSELECT\n    user_id,\n    order_cnt\nFROM dwd.dwd_trade_order_detail_di\nWHERE dt = '${bizdate}';", note: '源表也必须带分区条件' },
+      { label: 'Hive 特有语法', badge: 'ref', code: "DISTRIBUTE BY col SORT BY col;\nCLUSTER BY col;\nCREATE TABLE t (...)\n  PARTITIONED BY (dt STRING)\n  STORED AS PARQUET;", note: '分桶排序/分区DDL(Hive特有)' },
+    ]
+  },
+];
+
+// ============================================================
+// Application
+// ============================================================
+let db = null;
+let editor = null;
+let currentExercise = null;
+
+document.querySelectorAll('.sidebar-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.sidebar-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    document.querySelectorAll('.sidebar-content').forEach(c => c.style.display = 'none');
+    document.getElementById('sidebar-' + tab.dataset.tab).style.display = '';
+  });
+});
+
+function renderSchema() {
+  const el = document.getElementById('sidebar-schema');
+  let html = `<div class="schema-note">
+    <b>数仓分层:</b> DIM(维度层) / DWD(明细层) / DWS(汇总层) / ADS(应用层)<br>
+    <b>命名:</b> 库名.层级_业务域_对象_标识(如 dwd.dwd_trade_order_detail_di)<br>
+    <b>分区:</b> 所有表含 dt 字段, 查询必须带 dt 条件<br>
+    <b>库名:</b> ods / dwd / dws / dim / ads
+  </div>`;
+  html += SCHEMA.map(t => `
+    <div class="table-card">
+      <div class="table-card-header" onclick="this.querySelector('.arrow').classList.toggle('open');this.nextElementSibling.classList.toggle('open')">
+        <span><small style="color:var(--orange)">[${t.layer}]</small> ${t.name} <span class="row-count">(${t.rows.length}行)</span></span>
+        <span class="arrow">&#9654;</span>
+      </div>
+      <div class="table-card-body">
+        <div style="padding:6px 10px;font-size:11px;color:var(--text-muted)">${t.comment} | ${t.fullName}</div>
+        <table>
+          <tr><th>字段</th><th>类型</th><th>说明</th></tr>
+          ${t.columns.map(c => `<tr><td>${c[0]}</td><td>${c[1]}</td><td>${c[2]}</td></tr>`).join('')}
+        </table>
+      </div>
+    </div>
+  `).join('');
+  el.innerHTML = html;
+}
+
+function renderExercises() {
+  const el = document.getElementById('sidebar-exercises');
+  const levels = [
+    { key: 'beginner', label: '初级', cls: 'beginner' },
+    { key: 'intermediate', label: '中级', cls: 'intermediate' },
+    { key: 'advanced', label: '高级', cls: 'advanced' },
+  ];
+  el.innerHTML = levels.map(lv => {
+    const items = EXERCISES.filter(e => e.level === lv.key);
+    return `<div class="level-group">
+      <div class="level-label ${lv.cls}">${lv.label}</div>
+      ${items.map(e => `
+        <div class="exercise-item" data-id="${e.id}" onclick="selectExercise(${e.id})">
+          <span class="num">${e.id}.</span>
+          <span>${e.title}</span>
+          <span class="tags">${e.tags.map(t => `<span class="tag">${t}</span>`).join('')}</span>
+        </div>
+      `).join('')}
+    </div>`;
+  }).join('');
+}
+
+function renderSyntax() {
+  const el = document.getElementById('sidebar-syntax');
+  el.innerHTML = SYNTAX_REF.map(sec => `
+    <div class="syntax-section">
+      <h3>${sec.title}</h3>
+      ${sec.items.map(it => `
+        <div class="syntax-block"><b>${escapeHtml(it.label)}</b> <span class="syntax-badge ${it.badge === 'ok' ? 'badge-ok' : 'badge-ref'}">${it.badge === 'ok' ? '可执行' : '仅参考'}</span>
+${escapeHtml(it.code)}${it.note ? `\n<span class="syntax-note">${it.note}</span>` : ''}</div>
+      `).join('')}
+    </div>
+  `).join('');
+}
+
+// ============================================================
+// 教程内容 — 7 章
+// ============================================================
+const TUTORIAL = [
+  {
+    id: 1, title: '第1章 基础概念', stars: 1,
+    html: `
+<h4>什么是数据库？</h4>
+<p>数据库是按照一定结构组织、存储和管理数据的系统。就像一个超大的 Excel 工作簿，每张"表"是一个 Sheet，表中的每一行是一条记录，每一列是一个字段。</p>
+<h4>什么是 Hive？</h4>
+<p>Hive 是基于 Hadoop 的数据仓库工具，使用 HiveSQL（类 SQL 语法）查询海量数据。它将 SQL 转换为 MapReduce/Spark 任务执行。</p>
+<ul>
+  <li><b>适合场景：</b>离线批处理、数据分析、报表</li>
+  <li><b>不适合：</b>实时查询、频繁更新</li>
+</ul>
+<h4>数仓分层</h4>
+<p>数据仓库通常采用分层架构：</p>
+<ul>
+  <li><b>ODS（原始层）</b>：原始数据，不做处理</li>
+  <li><b>DWD（明细层）</b>：清洗后的明细数据，如订单明细、行为日志</li>
+  <li><b>DWS（汇总层）</b>：按主题汇总，如用户日/周/月汇总</li>
+  <li><b>DIM（维度层）</b>：维度数据，如用户信息、商品信息</li>
+  <li><b>ADS（应用层）</b>：面向报表和应用的最终数据</li>
+</ul>
+<h4>表命名规范</h4>
+<p>命名格式：<code>库名.层级_业务域_对象_标识</code></p>
+<ul>
+  <li><code>dim.dim_user_info_df</code> — 用户维度表(全量)</li>
+  <li><code>dwd.dwd_trade_order_detail_di</code> — 交易订单明细(增量)</li>
+  <li><b>df</b> = 全量快照，<b>di</b> = 增量</li>
+</ul>
+<h4>分区(dt)</h4>
+<p>Hive 表通常按日期分区（dt 字段），查询时<b>必须带 dt 条件</b>，否则会全表扫描，严重影响性能。</p>
+<div class="tutorial-tip">本平台所有表都包含 dt 字段，养成查询时带 dt 条件的好习惯！</div>
+`,
+    examples: []
+  },
+  {
+    id: 2, title: '第2章 基础查询', stars: 1,
+    html: `
+<h4>SELECT 基本语法</h4>
+<p>SELECT 是 SQL 最基础的语句，用于从表中查询数据：</p>
+<div class="tutorial-code-block">SELECT 列1, 列2, ...
+FROM 库名.表名
+WHERE 条件;</div>
+<div class="tutorial-tip">数仓规范：禁止使用 SELECT *，必须明确列出字段名。</div>
+
+<h4>示例1：基础 SELECT</h4>
+<p>查询用户表中的用户名和城市：</p>
+<div class="tutorial-code-block" id="tut-ex-2-1">SELECT
+    user_name,
+    city
+FROM dim.dim_user_info_df
+WHERE dt = '20250101'
+LIMIT 10;</div>
+<button class="btn-try" onclick="tryExample('tut-ex-2-1')">试一试</button>
+
+<h4>AS 别名</h4>
+<p>使用 AS 给列或表起别名，让结果更易读：</p>
+<div class="tutorial-code-block" id="tut-ex-2-2">SELECT
+    user_name AS 用户名,
+    city AS 城市,
+    age AS 年龄
+FROM dim.dim_user_info_df
+WHERE dt = '20250101'
+LIMIT 5;</div>
+<button class="btn-try" onclick="tryExample('tut-ex-2-2')">试一试</button>
+
+<h4>DISTINCT 去重</h4>
+<p>去除结果中的重复行：</p>
+<div class="tutorial-code-block" id="tut-ex-2-3">SELECT DISTINCT
+    city
+FROM dim.dim_user_info_df
+WHERE dt = '20250101';</div>
+<button class="btn-try" onclick="tryExample('tut-ex-2-3')">试一试</button>
+
+<h4>LIMIT 限制行数</h4>
+<p>LIMIT 用于限制返回的行数，常用于预览数据或取 TopN。</p>
+<div class="tutorial-code-block" id="tut-ex-2-4">SELECT
+    user_id,
+    user_name,
+    vip_level
+FROM dim.dim_user_info_df
+WHERE dt = '20250101'
+ORDER BY vip_level DESC
+LIMIT 5;</div>
+<button class="btn-try" onclick="tryExample('tut-ex-2-4')">试一试</button>
+
+<h4>SQL 执行顺序</h4>
+<p>SQL 的书写顺序与执行顺序不同：</p>
+<div class="tutorial-code-block">执行顺序：
+1. FROM      — 确定数据来源
+2. WHERE     — 行级过滤
+3. GROUP BY  — 分组
+4. HAVING    — 分组后过滤
+5. SELECT    — 选择输出列
+6. DISTINCT  — 去重
+7. ORDER BY  — 排序
+8. LIMIT     — 限制行数</div>
+<div class="tutorial-tip">理解执行顺序很重要！比如 WHERE 中不能使用 SELECT 中的别名，因为 WHERE 先于 SELECT 执行。</div>
+`,
+    examples: ['tut-ex-2-1','tut-ex-2-2','tut-ex-2-3','tut-ex-2-4']
+  },
+  {
+    id: 3, title: '第3章 过滤、排序与聚合', stars: 2,
+    html: `
+<h4>WHERE 条件过滤</h4>
+<p>WHERE 子句用于筛选满足条件的行。常用运算符：</p>
+<ul>
+  <li><b>比较：</b> =, !=, &gt;, &lt;, &gt;=, &lt;=</li>
+  <li><b>逻辑：</b> AND, OR, NOT</li>
+  <li><b>范围：</b> IN, BETWEEN ... AND</li>
+  <li><b>模糊：</b> LIKE（% 任意字符，_ 单字符）</li>
+  <li><b>空值：</b> IS NULL, IS NOT NULL</li>
+</ul>
+
+<h4>示例1：IN 操作符</h4>
+<div class="tutorial-code-block" id="tut-ex-3-1">SELECT
+    user_name,
+    city,
+    age
+FROM dim.dim_user_info_df
+WHERE dt = '20250101'
+    AND city IN ('北京', '上海', '广州')
+ORDER BY age;</div>
+<button class="btn-try" onclick="tryExample('tut-ex-3-1')">试一试</button>
+
+<h4>示例2：BETWEEN 范围</h4>
+<div class="tutorial-code-block" id="tut-ex-3-2">SELECT
+    user_name,
+    age,
+    city
+FROM dim.dim_user_info_df
+WHERE dt = '20250101'
+    AND age BETWEEN 25 AND 35;</div>
+<button class="btn-try" onclick="tryExample('tut-ex-3-2')">试一试</button>
+
+<h4>示例3：LIKE 模糊匹配</h4>
+<div class="tutorial-code-block" id="tut-ex-3-3">SELECT
+    product_name,
+    category,
+    unit_price
+FROM dim.dim_product_info_df
+WHERE dt = '20250101'
+    AND product_name LIKE '%蓝牙%';</div>
+<button class="btn-try" onclick="tryExample('tut-ex-3-3')">试一试</button>
+
+<h4>示例4：IS NULL 判断</h4>
+<div class="tutorial-code-block" id="tut-ex-3-4">-- 查看哪些城市有用户 city 为空的情况
+SELECT
+    user_id,
+    user_name,
+    NVL(city, '未知') AS city
+FROM dim.dim_user_info_df
+WHERE dt = '20250101'
+LIMIT 10;</div>
+<button class="btn-try" onclick="tryExample('tut-ex-3-4')">试一试</button>
+
+<h4>聚合函数</h4>
+<p>聚合函数对一组值计算后返回单个值：</p>
+<ul>
+  <li><b>COUNT()</b> — 计数</li>
+  <li><b>SUM()</b> — 求和</li>
+  <li><b>AVG()</b> — 平均值</li>
+  <li><b>MAX() / MIN()</b> — 最大/最小值</li>
+</ul>
+
+<h4>示例5：GROUP BY 分组聚合</h4>
+<div class="tutorial-code-block" id="tut-ex-3-5">SELECT
+    city,
+    COUNT(1) AS user_cnt,
+    ROUND(AVG(age), 1) AS avg_age
+FROM dim.dim_user_info_df
+WHERE dt = '20250101'
+GROUP BY city
+ORDER BY user_cnt DESC;</div>
+<button class="btn-try" onclick="tryExample('tut-ex-3-5')">试一试</button>
+
+<h4>示例6：HAVING 过滤分组</h4>
+<p>HAVING 是对 GROUP BY 后的分组结果进行过滤（WHERE 过滤行，HAVING 过滤组）：</p>
+<div class="tutorial-code-block" id="tut-ex-3-6">SELECT
+    city,
+    COUNT(1) AS user_cnt
+FROM dim.dim_user_info_df
+WHERE dt = '20250101'
+GROUP BY city
+HAVING COUNT(1) >= 5
+ORDER BY user_cnt DESC;</div>
+<button class="btn-try" onclick="tryExample('tut-ex-3-6')">试一试</button>
+
+<h4>示例7：ORDER BY 排序</h4>
+<div class="tutorial-code-block" id="tut-ex-3-7">SELECT
+    order_id,
+    order_amount,
+    pay_time
+FROM dwd.dwd_trade_order_detail_di
+WHERE dt >= '20250101' AND dt <= '20250130'
+    AND order_status = 'paid'
+ORDER BY order_amount DESC
+LIMIT 10;</div>
+<button class="btn-try" onclick="tryExample('tut-ex-3-7')">试一试</button>
+
+<h4>示例8：多字段聚合</h4>
+<div class="tutorial-code-block" id="tut-ex-3-8">SELECT
+    order_status,
+    COUNT(1) AS order_cnt,
+    ROUND(SUM(order_amount), 2) AS total_amount,
+    ROUND(AVG(order_amount), 2) AS avg_amount
+FROM dwd.dwd_trade_order_detail_di
+WHERE dt >= '20250101' AND dt <= '20250130'
+GROUP BY order_status
+ORDER BY total_amount DESC;</div>
+<button class="btn-try" onclick="tryExample('tut-ex-3-8')">试一试</button>
+`,
+    examples: ['tut-ex-3-1','tut-ex-3-2','tut-ex-3-3','tut-ex-3-4','tut-ex-3-5','tut-ex-3-6','tut-ex-3-7','tut-ex-3-8']
+  },
+  {
+    id: 4, title: '第4章 多表 JOIN', stars: 2,
+    html: `
+<h4>为什么需要 JOIN？</h4>
+<p>数据仓库中数据分布在不同的表中。比如订单表只有 user_id，要获取用户名就需要 JOIN 用户维度表。</p>
+
+<h4>JOIN 类型</h4>
+<ul>
+  <li><b>INNER JOIN</b>：只返回两表都匹配的行</li>
+  <li><b>LEFT JOIN</b>：返回左表所有行，右表无匹配填 NULL</li>
+  <li><b>RIGHT JOIN</b>：返回右表所有行（较少使用）</li>
+  <li><b>FULL JOIN</b>：返回两表所有行</li>
+  <li><b>CROSS JOIN</b>：笛卡尔积（慎用）</li>
+</ul>
+
+<div class="tutorial-tip">数仓规范：事实表(大表)的 dt 放 WHERE，维度表(小表)的 dt 放 JOIN ON 子句！</div>
+
+<h4>示例1：INNER JOIN</h4>
+<p>查询已支付订单及对应的用户名：</p>
+<div class="tutorial-code-block" id="tut-ex-4-1">SELECT
+    a.order_id,
+    b.user_name,
+    a.order_amount,
+    a.pay_time
+FROM dwd.dwd_trade_order_detail_di a
+INNER JOIN dim.dim_user_info_df b
+    ON a.user_id = b.user_id
+    AND b.dt = '20250101'
+WHERE a.dt >= '20250101' AND a.dt <= '20250130'
+    AND a.order_status = 'paid'
+LIMIT 10;</div>
+<button class="btn-try" onclick="tryExample('tut-ex-4-1')">试一试</button>
+
+<h4>示例2：LEFT JOIN</h4>
+<p>LEFT JOIN 保留左表所有行，即使右表没有匹配。适合统计"有没有下过单"的场景：</p>
+<div class="tutorial-code-block" id="tut-ex-4-2">SELECT
+    a.user_name,
+    COUNT(b.order_id) AS order_cnt
+FROM dim.dim_user_info_df a
+LEFT JOIN dwd.dwd_trade_order_detail_di b
+    ON a.user_id = b.user_id
+    AND b.dt >= '20250101' AND b.dt <= '20250130'
+    AND b.order_status = 'paid'
+WHERE a.dt = '20250101'
+GROUP BY a.user_name
+ORDER BY order_cnt DESC
+LIMIT 10;</div>
+<button class="btn-try" onclick="tryExample('tut-ex-4-2')">试一试</button>
+
+<h4>示例3：多表 JOIN</h4>
+<p>JOIN 三张表，获取订单的完整信息：</p>
+<div class="tutorial-code-block" id="tut-ex-4-3">SELECT
+    a.order_id,
+    b.user_name,
+    c.product_name,
+    c.category,
+    a.order_amount
+FROM dwd.dwd_trade_order_detail_di a
+LEFT JOIN dim.dim_user_info_df b
+    ON a.user_id = b.user_id
+    AND b.dt = '20250101'
+LEFT JOIN dim.dim_product_info_df c
+    ON a.product_id = c.product_id
+    AND c.dt = '20250101'
+WHERE a.dt >= '20250101' AND a.dt <= '20250130'
+    AND a.order_status = 'paid'
+LIMIT 10;</div>
+<button class="btn-try" onclick="tryExample('tut-ex-4-3')">试一试</button>
+
+<div class="tutorial-warn">JOIN 时注意：大表放前面(FROM)，小表放后面(JOIN)。ON 条件要准确，避免笛卡尔积导致数据膨胀。</div>
+`,
+    examples: ['tut-ex-4-1','tut-ex-4-2','tut-ex-4-3']
+  },
+  {
+    id: 5, title: '第5章 子查询与函数', stars: 2,
+    html: `
+<h4>子查询</h4>
+<p>子查询是嵌套在其他 SQL 语句中的 SELECT 语句。常见用法：</p>
+<ul>
+  <li><b>WHERE ... IN (子查询)</b>：过滤条件中使用</li>
+  <li><b>FROM (子查询) t</b>：作为临时表</li>
+  <li><b>标量子查询</b>：返回单个值</li>
+</ul>
+
+<h4>示例1：IN 子查询</h4>
+<div class="tutorial-code-block" id="tut-ex-5-1">-- 查询购买过"数码"类商品的用户
+SELECT
+    user_name,
+    city
+FROM dim.dim_user_info_df
+WHERE dt = '20250101'
+    AND user_id IN (
+        SELECT DISTINCT user_id
+        FROM dwd.dwd_trade_order_detail_di
+        WHERE dt >= '20250101' AND dt <= '20250130'
+            AND order_status = 'paid'
+            AND product_id IN (
+                SELECT product_id
+                FROM dim.dim_product_info_df
+                WHERE dt = '20250101'
+                    AND category = '数码'
+            )
+    );</div>
+<button class="btn-try" onclick="tryExample('tut-ex-5-1')">试一试</button>
+
+<h4>WITH CTE（公用表表达式）</h4>
+<p>CTE 可以把复杂查询拆分为多个步骤，可读性更好：</p>
+<div class="tutorial-code-block" id="tut-ex-5-2">WITH user_spend AS (
+    SELECT
+        user_id,
+        SUM(order_amount) AS total_amount
+    FROM dwd.dwd_trade_order_detail_di
+    WHERE dt >= '20250101' AND dt <= '20250130'
+        AND order_status = 'paid'
+    GROUP BY user_id
+)
+SELECT
+    b.user_name,
+    a.total_amount
+FROM user_spend a
+INNER JOIN dim.dim_user_info_df b
+    ON a.user_id = b.user_id
+    AND b.dt = '20250101'
+ORDER BY a.total_amount DESC
+LIMIT 5;</div>
+<button class="btn-try" onclick="tryExample('tut-ex-5-2')">试一试</button>
+
+<h4>CASE WHEN 条件表达式</h4>
+<p>类似编程中的 if-else，用于在 SQL 中做条件判断：</p>
+<div class="tutorial-code-block" id="tut-ex-5-3">SELECT
+    user_name,
+    age,
+    CASE
+        WHEN age < 25 THEN '青年'
+        WHEN age < 35 THEN '中青年'
+        ELSE '中年'
+    END AS age_group,
+    CASE vip_level
+        WHEN 0 THEN '普通'
+        WHEN 1 THEN '银卡'
+        WHEN 2 THEN '金卡'
+        WHEN 3 THEN '钻石'
+    END AS vip_label
+FROM dim.dim_user_info_df
+WHERE dt = '20250101'
+LIMIT 10;</div>
+<button class="btn-try" onclick="tryExample('tut-ex-5-3')">试一试</button>
+
+<h4>常用字符串函数</h4>
+<div class="tutorial-code-block" id="tut-ex-5-4">SELECT
+    user_name,
+    LENGTH(user_name) AS name_len,
+    SUBSTR(reg_date, 1, 7) AS reg_month,
+    CONCAT_WS('-', NVL(city, '未知'), gender) AS info,
+    REPLACE(reg_date, '-', '') AS reg_compact
+FROM dim.dim_user_info_df
+WHERE dt = '20250101'
+LIMIT 8;</div>
+<button class="btn-try" onclick="tryExample('tut-ex-5-4')">试一试</button>
+
+<h4>日期函数与 NULL 处理</h4>
+<div class="tutorial-code-block" id="tut-ex-5-5">SELECT
+    user_name,
+    reg_date,
+    DATEDIFF('2025-01-30', reg_date) AS days_registered,
+    DATE_ADD(reg_date, 365) AS one_year_later,
+    YEAR(reg_date) AS reg_year,
+    MONTH(reg_date) AS reg_month
+FROM dim.dim_user_info_df
+WHERE dt = '20250101'
+LIMIT 8;</div>
+<button class="btn-try" onclick="tryExample('tut-ex-5-5')">试一试</button>
+`,
+    examples: ['tut-ex-5-1','tut-ex-5-2','tut-ex-5-3','tut-ex-5-4','tut-ex-5-5']
+  },
+  {
+    id: 6, title: '第6章 窗口函数', stars: 3,
+    html: `
+<h4>什么是窗口函数？</h4>
+<p>窗口函数在不减少行数的情况下，对"窗口"内的数据进行计算。语法：</p>
+<div class="tutorial-code-block">函数名() OVER (
+    [PARTITION BY 分组列]
+    [ORDER BY 排序列]
+    [ROWS/RANGE 窗口范围]
+)</div>
+
+<h4>常用窗口函数</h4>
+<ul>
+  <li><b>ROW_NUMBER()</b>：行号（不并列：1,2,3,4）</li>
+  <li><b>RANK()</b>：排名（并列跳号：1,1,3）</li>
+  <li><b>DENSE_RANK()</b>：排名（并列不跳：1,1,2）</li>
+  <li><b>LAG(col, n)</b>：取前 n 行的值</li>
+  <li><b>LEAD(col, n)</b>：取后 n 行的值</li>
+  <li><b>SUM/AVG/COUNT OVER()</b>：窗口内聚合</li>
+</ul>
+
+<h4>示例1：ROW_NUMBER / RANK</h4>
+<div class="tutorial-code-block" id="tut-ex-6-1">SELECT
+    user_id,
+    order_id,
+    order_amount,
+    ROW_NUMBER() OVER (
+        PARTITION BY user_id
+        ORDER BY order_amount DESC
+    ) AS rn,
+    RANK() OVER (
+        PARTITION BY user_id
+        ORDER BY order_amount DESC
+    ) AS rnk
+FROM dwd.dwd_trade_order_detail_di
+WHERE dt >= '20250101' AND dt <= '20250130'
+    AND order_status = 'paid'
+    AND user_id IN (1, 2, 3)
+ORDER BY user_id, rn;</div>
+<button class="btn-try" onclick="tryExample('tut-ex-6-1')">试一试</button>
+
+<h4>示例2：LAG / LEAD</h4>
+<p>获取每个用户上一次和下一次的购买时间：</p>
+<div class="tutorial-code-block" id="tut-ex-6-2">SELECT
+    user_id,
+    order_id,
+    pay_time,
+    LAG(pay_time, 1) OVER (
+        PARTITION BY user_id ORDER BY pay_time
+    ) AS prev_pay,
+    LEAD(pay_time, 1) OVER (
+        PARTITION BY user_id ORDER BY pay_time
+    ) AS next_pay
+FROM dwd.dwd_trade_order_detail_di
+WHERE dt >= '20250101' AND dt <= '20250130'
+    AND order_status = 'paid'
+    AND user_id <= 5
+ORDER BY user_id, pay_time;</div>
+<button class="btn-try" onclick="tryExample('tut-ex-6-2')">试一试</button>
+
+<h4>示例3：累计求和</h4>
+<div class="tutorial-code-block" id="tut-ex-6-3">SELECT
+    order_id,
+    pay_time,
+    order_amount,
+    SUM(order_amount) OVER (
+        ORDER BY pay_time
+        ROWS UNBOUNDED PRECEDING
+    ) AS running_total
+FROM dwd.dwd_trade_order_detail_di
+WHERE dt >= '20250101' AND dt <= '20250130'
+    AND order_status = 'paid'
+ORDER BY pay_time
+LIMIT 15;</div>
+<button class="btn-try" onclick="tryExample('tut-ex-6-3')">试一试</button>
+
+<h4>示例4：移动平均</h4>
+<div class="tutorial-code-block" id="tut-ex-6-4">SELECT
+    order_id,
+    pay_time,
+    order_amount,
+    ROUND(AVG(order_amount) OVER (
+        ORDER BY pay_time
+        ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+    ), 2) AS moving_avg_3
+FROM dwd.dwd_trade_order_detail_di
+WHERE dt >= '20250101' AND dt <= '20250130'
+    AND order_status = 'paid'
+ORDER BY pay_time
+LIMIT 15;</div>
+<button class="btn-try" onclick="tryExample('tut-ex-6-4')">试一试</button>
+
+<div class="tutorial-tip">窗口函数是面试高频考点！务必掌握 ROW_NUMBER + PARTITION BY 的 TopN 用法。</div>
+`,
+    examples: ['tut-ex-6-1','tut-ex-6-2','tut-ex-6-3','tut-ex-6-4']
+  },
+  {
+    id: 7, title: '第7章 Hive 特性与实战', stars: 3,
+    html: `
+<h4>分区表</h4>
+<p>Hive 表按 dt（日期）分区，物理上每个分区是一个目录。查询时指定 dt 可以避免全表扫描。</p>
+<div class="tutorial-code-block">-- Hive DDL（仅展示，本平台不可执行）
+CREATE TABLE dwd.dwd_trade_order_detail_di (
+    order_id   BIGINT,
+    user_id    BIGINT,
+    order_amount DECIMAL(18,2)
+)
+PARTITIONED BY (dt STRING)
+STORED AS PARQUET;</div>
+
+<h4>Hive 数据类型</h4>
+<ul>
+  <li><b>基本类型：</b>TINYINT, SMALLINT, INT, BIGINT, FLOAT, DOUBLE, DECIMAL, STRING, BOOLEAN</li>
+  <li><b>复合类型：</b>ARRAY, MAP, STRUCT</li>
+  <li><b>日期类型：</b>DATE, TIMESTAMP (但常用 STRING 存储日期)</li>
+</ul>
+
+<h4>EXPLODE 与 LATERAL VIEW</h4>
+<p>EXPLODE 将数组/Map 展开为多行，LATERAL VIEW 将展开结果与原表关联（Hive 特有语法，本平台仅做参考）。</p>
+
+<h4>性能优化要点</h4>
+<ul>
+  <li>始终带 <b>dt 分区条件</b></li>
+  <li>避免 <b>SELECT *</b>，只取需要的列</li>
+  <li>大表 JOIN 小表，小表放右边</li>
+  <li>使用 <b>MapJoin</b> 优化小表 JOIN</li>
+  <li>避免数据倾斜：对倾斜 key 做特殊处理</li>
+</ul>
+
+<h4>实战：连续登录天数</h4>
+<p>经典面试题！思路：用 ROW_NUMBER 编号后，login_date - rn 得到分组标识，相同标识代表连续登录。</p>
+<div class="tutorial-code-block" id="tut-ex-7-1">WITH login_ranked AS (
+    SELECT DISTINCT
+        user_id,
+        login_date,
+        ROW_NUMBER() OVER (
+            PARTITION BY user_id
+            ORDER BY login_date
+        ) AS rn
+    FROM dwd.dwd_user_login_di
+    WHERE dt >= '20250101' AND dt <= '20250130'
+),
+login_grouped AS (
+    SELECT
+        user_id,
+        login_date,
+        DATE_SUB(login_date, rn) AS grp
+    FROM login_ranked
+)
+SELECT
+    user_id,
+    MIN(login_date) AS start_date,
+    MAX(login_date) AS end_date,
+    COUNT(1) AS consecutive_days
+FROM login_grouped
+GROUP BY user_id, grp
+HAVING COUNT(1) >= 3
+ORDER BY consecutive_days DESC, user_id
+LIMIT 20;</div>
+<button class="btn-try" onclick="tryExample('tut-ex-7-1')">试一试</button>
+
+<h4>实战：次日留存率</h4>
+<p>留存率 = 第二天还来的用户数 / 当天用户数 × 100%</p>
+<div class="tutorial-code-block" id="tut-ex-7-2">WITH daily_login AS (
+    SELECT DISTINCT
+        user_id,
+        login_date
+    FROM dwd.dwd_user_login_di
+    WHERE dt >= '20250101' AND dt <= '20250130'
+)
+SELECT
+    a.login_date,
+    COUNT(DISTINCT a.user_id) AS login_users,
+    COUNT(DISTINCT b.user_id) AS retained_users,
+    ROUND(
+        COUNT(DISTINCT b.user_id) * 100.0
+        / COUNT(DISTINCT a.user_id),
+        2
+    ) AS retention_rate
+FROM daily_login a
+LEFT JOIN daily_login b
+    ON a.user_id = b.user_id
+    AND b.login_date = DATE_ADD(a.login_date, 1)
+GROUP BY a.login_date
+ORDER BY a.login_date
+LIMIT 20;</div>
+<button class="btn-try" onclick="tryExample('tut-ex-7-2')">试一试</button>
+
+<h4>实战：日活跃用户数(DAU)</h4>
+<div class="tutorial-code-block" id="tut-ex-7-3">SELECT
+    login_date,
+    COUNT(DISTINCT user_id) AS dau
+FROM dwd.dwd_user_login_di
+WHERE dt >= '20250101' AND dt <= '20250130'
+GROUP BY login_date
+ORDER BY login_date;</div>
+<button class="btn-try" onclick="tryExample('tut-ex-7-3')">试一试</button>
+
+<div class="tutorial-tip">连续登录和留存率是数据分析面试最高频的两道题，务必熟练掌握！去"练习题"Tab 做第 21、22 题巩固。</div>
+`,
+    examples: ['tut-ex-7-1','tut-ex-7-2','tut-ex-7-3']
+  },
+];
+
+function renderTutorial() {
+  const el = document.getElementById('sidebar-tutorial');
+  const starStr = n => '<span class="stars">' + '★'.repeat(n) + '☆'.repeat(3 - n) + '</span>';
+  el.innerHTML = `<div class="schema-note">
+    <b>HiveSQL 完全学习教程</b><br>
+    从基础概念到高级实战，共 7 章。点击章节展开学习。<br>
+    每个代码示例旁的「试一试」按钮可直接在编辑器中运行。
+  </div>` + TUTORIAL.map(ch => `
+    <div class="tutorial-chapter">
+      <div class="tutorial-chapter-header" onclick="this.querySelector('.arrow').classList.toggle('open');this.nextElementSibling.classList.toggle('open')">
+        <span>${ch.title} ${starStr(ch.stars)}</span>
+        <span class="arrow">&#9654;</span>
+      </div>
+      <div class="tutorial-chapter-body">${ch.html}</div>
+    </div>
+  `).join('');
+}
+
+function tryExample(blockId) {
+  const block = document.getElementById(blockId);
+  if (!block) return;
+  const code = block.textContent;
+  editor.setValue(code);
+  editor.setCursor(editor.lineCount(), 0);
+  editor.focus();
+  // Auto-run
+  setTimeout(() => runSQL(), 100);
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function selectExercise(id) {
+  const ex = EXERCISES.find(e => e.id === id);
+  if (!ex) return;
+  currentExercise = ex;
+  document.querySelectorAll('.exercise-item').forEach(el => el.classList.remove('active'));
+  const item = document.querySelector(`.exercise-item[data-id="${id}"]`);
+  if (item) item.classList.add('active');
+  document.getElementById('exerciseBar').classList.add('show');
+  document.getElementById('exTitle').textContent = `第 ${ex.id} 题: ${ex.title}`;
+  document.getElementById('exDesc').textContent = ex.desc;
+  document.getElementById('exHint').textContent = ex.hint;
+  document.getElementById('btnAnswer').disabled = false;
+  editor.setValue(`-- 第 ${ex.id} 题: ${ex.title}\n-- ${ex.desc.split('\n')[0]}\n\n`);
+  editor.setCursor(editor.lineCount(), 0);
+  editor.focus();
+}
+
+document.getElementById('btnAnswer').addEventListener('click', () => {
+  if (!currentExercise) return;
+  const resultsEl = document.getElementById('results');
+  resultsEl.innerHTML += `
+    <div class="answer-block">
+      <h4>参考答案 -- 第 ${currentExercise.id} 题</h4>
+      <pre>${escapeHtml(currentExercise.answer)}</pre>
+    </div>`;
+  resultsEl.scrollTop = resultsEl.scrollHeight;
+});
+
+document.getElementById('btnClear').addEventListener('click', () => { editor.setValue(''); editor.focus(); });
+document.getElementById('btnRun').addEventListener('click', runSQL);
+
+function runSQL() {
+  const sel = editor.getSelection().trim();
+  const sql = sel || editor.getValue().trim();
+  if (!sql) return;
+  const resultsEl = document.getElementById('results');
+  const statusEl = document.getElementById('execStatus');
+  const t0 = performance.now();
+  try {
+    const results = db.exec(sql);
+    const elapsed = (performance.now() - t0).toFixed(1);
+    if (results.length === 0) {
+      resultsEl.innerHTML = `<div class="result-success">语句执行成功(无返回数据)</div>`;
+      statusEl.textContent = `耗时 ${elapsed} ms`;
+      return;
+    }
+    let html = '';
+    results.forEach(r => {
+      html += '<div class="result-table-wrap"><table class="result-table"><thead><tr>';
+      r.columns.forEach(c => { html += `<th>${escapeHtml(c)}</th>`; });
+      html += '</tr></thead><tbody>';
+      r.values.forEach(row => {
+        html += '<tr>';
+        row.forEach(v => { html += `<td>${v === null ? '<span style="color:var(--text-muted)">NULL</span>' : escapeHtml(String(v))}</td>`; });
+        html += '</tr>';
+      });
+      html += '</tbody></table></div>';
+      html += `<div class="result-info">${r.values.length} 行 x ${r.columns.length} 列 | ${elapsed} ms</div>`;
+    });
+    resultsEl.innerHTML = html;
+    statusEl.textContent = `耗时 ${elapsed} ms`;
+  } catch (err) {
+    resultsEl.innerHTML = `<div class="result-error">${escapeHtml(err.message)}</div>`;
+    statusEl.textContent = '执行出错';
+  }
+}
+
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); runSQL(); }
+});
+
+// ============================================================
+// 数据生成 — 模拟真实业务数据(确定性随机)
+// 用户100 · 商品50 · 订单900(30天x30条) · 行为日志1000
+// 分区: 2025年1月 20250101~20250130, 含适量NULL模拟线上环境
+// ============================================================
+function generateData() {
+  let _s = 42;
+  function rand() { _s = (_s * 1664525 + 1013904223) & 0x7fffffff; return _s / 0x7fffffff; }
+  function randInt(a, b) { return Math.floor(rand() * (b - a + 1)) + a; }
+  function pick(arr) { return arr[randInt(0, arr.length - 1)]; }
+  function pad2(n) { return String(n).padStart(2, '0'); }
+  // 按概率返回 null 或原值
+  function maybeNull(val, prob) { return rand() < prob ? null : val; }
+
+  // ---- dim_user_info_df (100 users, ~5%有NULL字段) ----
+  const surnames = '张李王赵陈周吴郑刘孙马林黄杨何高罗谢韩冯朱许胡郭邓萧曹袁唐薛'.split('');
+  const givens = '伟芳娜敏静丽强磊洋勇军杰艳涛明超玲丹萍鑫浩华飞平刚志强建华文婷雪慧倩欣琳宇博思梦佳豪鹏凯旭彬'.split('');
+  const givens2 = ['小红','大伟','晓明','云飞','建国','志远','秀英','桂英','春华','国强','海燕','晓峰','雅琴','文博','思远','嘉怡','浩然','子涵','梓萱','俊杰'];
+  const cities = ['北京','上海','广州','深圳','杭州','成都','武汉','南京','重庆','西安','长沙','苏州','天津','青岛','郑州','合肥','厦门','大连','济南','昆明'];
+  const users = [];
+  const usedNames = new Set();
+  for (let i = 1; i <= 100; i++) {
+    let nm;
+    do { nm = pick(surnames) + (rand() > 0.3 ? pick(givens) + (rand() > 0.5 ? pick(givens) : '') : pick(givens2)); } while (usedNames.has(nm));
+    usedNames.add(nm);
+    const gender = rand() > 0.48 ? 'M' : 'F';
+    const age = randInt(18, 55);
+    const city = maybeNull(pick(cities), 0.05); // 5% city为NULL
+    const y = rand() > 0.45 ? 2024 : 2023;
+    const reg_date = `${y}-${pad2(randInt(1,12))}-${pad2(randInt(1,28))}`;
+    const r = rand(); const vip = r < 0.38 ? 0 : r < 0.68 ? 1 : r < 0.88 ? 2 : 3;
+    users.push([i, nm, gender, maybeNull(age, 0.03), city, reg_date, vip, '20250101']);
+  }
+  SCHEMA[0].rows = users;
+
+  // ---- dim_product_info_df (50 products) ----
+  const PD = [
+    ['无线蓝牙耳机','数码',199,'索尼'],['机械键盘','数码',399,'罗技'],['无线鼠标','数码',129,'罗技'],
+    ['手机壳','数码',35,'绿联'],['充电宝','数码',149,'小米'],['数据线','数码',29,'安克'],
+    ['平板电脑','数码',3299,'华为'],['笔记本电脑','数码',6999,'联想'],['显示器','数码',1599,'戴尔'],
+    ['蓝牙音箱','数码',299,'JBL'],['智能手表','数码',1499,'华为'],['固态硬盘','数码',459,'三星'],
+    ['运动T恤','服饰',129,'耐克'],['衬衫','服饰',169,'优衣库'],['牛仔裤','服饰',299,'李维斯'],
+    ['运动裤','服饰',159,'阿迪达斯'],['外套','服饰',399,'太平鸟'],['连衣裙','服饰',259,'ZARA'],
+    ['羽绒服','服饰',899,'波司登'],['跑步鞋','服饰',599,'耐克'],
+    ['台灯','家居',139,'飞利浦'],['保温杯','家居',89,'膳魔师'],['收纳盒','家居',39,'禧天龙'],
+    ['四件套','家居',269,'罗莱'],['毛巾','家居',35,'洁丽雅'],['拖鞋','家居',29,'朴西'],
+    ['加湿器','家居',199,'米家'],['垃圾桶','家居',49,'茶花'],
+    ['面膜套装','美妆',168,'兰蔻'],['洗面奶','美妆',89,'资生堂'],['口红','美妆',229,'MAC'],
+    ['眼影盘','美妆',199,'完美日记'],['防晒霜','美妆',149,'安耐晒'],['精华液','美妆',399,'雅诗兰黛'],
+    ['零食大礼包','食品',89,'三只松鼠'],['咖啡豆','食品',128,'星巴克'],['牛奶','食品',59,'蒙牛'],
+    ['坚果混合装','食品',79,'百草味'],['饼干礼盒','食品',49,'好丽友'],['巧克力','食品',99,'费列罗'],
+    ['瑜伽垫','运动',79,'迪卡侬'],['哑铃套装','运动',259,'迪卡侬'],['跳绳','运动',35,'李宁'],
+    ['运动水壶','运动',49,'乐扣'],['护膝','运动',69,'准者'],
+    ['编程入门','图书',69,'人民邮电'],['小说畅销','图书',42,'中信'],['管理学经典','图书',58,'机械工业'],
+    ['历史读物','图书',45,'中华书局'],['科普读物','图书',39,'湛庐'],
+  ];
+  const products = PD.map((p, i) => [101 + i, p[0], p[1], p[2], p[3], '20250101']);
+  SCHEMA[1].rows = products;
+
+  // ---- dwd_trade_order_detail_di (900 orders: 30天x30条/天) ----
+  // 每天保证覆盖所有订单状态, 适量NULL模拟线上脏数据
+  const statusPool = ['paid','paid','paid','paid','paid','paid','cancelled','cancelled','refunded','pending'];
+  const orders = [];
+  let orderId = 10001;
+  for (let day = 1; day <= 30; day++) {
+    const dt = `2025${pad2(1)}${pad2(day)}`;
+    const dtDash = `2025-01-${pad2(day)}`; // 用于 pay_time 内部
+    for (let j = 0; j < 30; j++) {
+      const uid = randInt(1, 100);
+      const prod = products[randInt(0, products.length - 1)];
+      const qty = randInt(1, 4);
+      let amt = Math.round(prod[3] * qty * 100) / 100;
+      const h = randInt(0, 23), mi = randInt(0, 59), se = randInt(0, 59);
+      const pay_time = `${dtDash} ${pad2(h)}:${pad2(mi)}:${pad2(se)}`;
+      // 确保每天都有不同状态: 前几条按顺序分配状态
+      let status;
+      if (j < statusPool.length) {
+        status = statusPool[j];
+      } else {
+        status = pick(statusPool);
+      }
+      // ~3% 订单金额为NULL(模拟异常数据)
+      amt = maybeNull(amt, 0.03);
+      // ~2% pay_time为NULL(未支付完成)
+      const finalPayTime = maybeNull(pay_time, 0.02);
+      orders.push([orderId++, uid, prod[0], amt, qty, finalPayTime, status, dt]);
+    }
+  }
+  // 按 dt + pay_time 排序, 保证 order_id 递增与时间基本一致
+  orders.sort((a, b) => {
+    const dtCmp = String(a[7]).localeCompare(String(b[7]));
+    if (dtCmp !== 0) return dtCmp;
+    if (a[5] === null && b[5] === null) return 0;
+    if (a[5] === null) return 1;
+    if (b[5] === null) return -1;
+    return a[5].localeCompare(b[5]);
+  });
+  orders.forEach((r, i) => { r[0] = 10001 + i; });
+  orders[2][5] = '2025-01-01 18:15:05'; // 修改 order_id=10003 的 pay_time
+  // 新增 product_id=110 的订单，pay_time 在 10003 之后
+  orders.splice(3, 0, [0, randInt(1,100), 110, 299, 1, '2025-01-01 18:30:00', 'paid', '20250101']);
+  orders.forEach((r, i) => { r[0] = 10001 + i; }); // 重新编号
+  SCHEMA[2].rows = orders;
+
+  // ---- dwd_traffic_user_action_di (1000 action logs, 分布在30天) ----
+  const actPool = [
+    ['view','首页',10,120,35],['view','搜索结果',10,80,15],['view','活动页',10,90,10],
+    ['click','商品详情',15,180,25],['click','搜索结果',8,50,10],
+    ['cart','购物车',5,40,10],['buy','支付页',5,30,8],['share','商品详情',3,20,5],
+  ];
+  const totalW = actPool.reduce((s, a) => s + a[4], 0);
+  function pickAct() {
+    let r = rand() * totalW;
+    for (const a of actPool) { r -= a[4]; if (r <= 0) return a; }
+    return actPool[0];
+  }
+  const logs = [];
+  for (let i = 0; i < 1000; i++) {
+    const uid = randInt(1, 100);
+    const a = pickAct();
+    const day = randInt(1, 30);
+    const dt = `2025${pad2(1)}${pad2(day)}`;
+    const dtDash = `2025-01-${pad2(day)}`;
+    const h = randInt(6, 23), mi = randInt(0, 59);
+    const at = `${dtDash} ${pad2(h)}:${pad2(mi)}:00`;
+    // ~2% duration为NULL
+    const dur = maybeNull(randInt(a[2], a[3]), 0.02);
+    logs.push([i + 1, uid, a[0], a[1], at, dur, dt]);
+  }
+  SCHEMA[3].rows = logs;
+
+  // ---- dwd_user_login_di (~600 login records, 分布在30天) ----
+  const loginLogs = [];
+  let logId = 1;
+  // Create login patterns: some users login frequently with consecutive days
+  const activeUsers = [];
+  for (let i = 0; i < 20; i++) activeUsers.push(randInt(1, 100));
+  // Generate consecutive login streaks for active users
+  for (const uid of activeUsers) {
+    const streakCount = randInt(1, 3);
+    for (let s = 0; s < streakCount; s++) {
+      const startD = randInt(1, 22);
+      const streakLen = randInt(3, 7);
+      for (let d = 0; d < streakLen; d++) {
+        const day = startD + d;
+        if (day > 30) break;
+        const dt = `2025${pad2(1)}${pad2(day)}`;
+        const loginDate = `2025-01-${pad2(day)}`;
+        loginLogs.push([logId++, uid, loginDate, dt]);
+      }
+    }
+  }
+  // Generate random logins for other users
+  for (let i = 0; i < 300; i++) {
+    const uid = randInt(1, 100);
+    const day = randInt(1, 30);
+    const dt = `2025${pad2(1)}${pad2(day)}`;
+    const loginDate = `2025-01-${pad2(day)}`;
+    loginLogs.push([logId++, uid, loginDate, dt]);
+  }
+  SCHEMA[4].rows = loginLogs;
+
+  // ---- dwd_live_room_log_di (直播间进出记录) ----
+  // 3个直播间, 每个直播间在1月15日有多个用户进出, 构造明确的峰值
+  const liveLogs = [];
+  let liveLogId = 1;
+  const roomIds = [1001, 1002, 1003];
+  const dt15 = '20250115';
+  const dtDash15 = '2025-01-15';
+
+  // room 1001: 峰值 5 人 (14:20~14:25 时有5人同时在线)
+  const room1001 = [
+    [1,  '08:00', '09:30'],
+    [2,  '08:30', '10:00'],
+    [3,  '10:00', '11:30'],
+    [4,  '14:00', '15:00'],
+    [5,  '14:05', '15:30'],
+    [6,  '14:10', '16:00'],
+    [7,  '14:15', '14:50'],
+    [8,  '14:20', '14:45'],  // 此时 4,5,6,7,8 都在 → 峰值5人
+    [9,  '16:00', '17:00'],
+    [10, '16:30', '17:30'],
+    [11, '20:00', '21:00'],
+    [12, '20:30', '21:30'],
+  ];
+  for (const [uid, enter, leave] of room1001) {
+    liveLogs.push([liveLogId++, 1001, uid, 'enter', `${dtDash15} ${enter}:00`, dt15]);
+    liveLogs.push([liveLogId++, 1001, uid, 'leave', `${dtDash15} ${leave}:00`, dt15]);
+  }
+
+  // room 1002: 峰值 4 人
+  const room1002 = [
+    [20, '09:00', '10:30'],
+    [21, '09:15', '10:00'],
+    [22, '09:20', '11:00'],
+    [23, '09:25', '09:50'],  // 9:25时 20,21,22,23 都在 → 峰值4人
+    [24, '13:00', '14:00'],
+    [25, '13:30', '14:30'],
+    [26, '15:00', '16:00'],
+    [27, '19:00', '20:00'],
+    [28, '19:30', '20:30'],
+  ];
+  for (const [uid, enter, leave] of room1002) {
+    liveLogs.push([liveLogId++, 1002, uid, 'enter', `${dtDash15} ${enter}:00`, dt15]);
+    liveLogs.push([liveLogId++, 1002, uid, 'leave', `${dtDash15} ${leave}:00`, dt15]);
+  }
+
+  // room 1003: 峰值 3 人
+  const room1003 = [
+    [40, '10:00', '11:00'],
+    [41, '10:20', '11:30'],
+    [42, '10:30', '11:00'],  // 10:30时 40,41,42 都在 → 峰值3人
+    [43, '14:00', '15:00'],
+    [44, '14:30', '15:30'],
+    [45, '20:00', '21:00'],
+  ];
+  for (const [uid, enter, leave] of room1003) {
+    liveLogs.push([liveLogId++, 1003, uid, 'enter', `${dtDash15} ${enter}:00`, dt15]);
+    liveLogs.push([liveLogId++, 1003, uid, 'leave', `${dtDash15} ${leave}:00`, dt15]);
+  }
+
+  SCHEMA[5].rows = liveLogs;
+
+  // ---- dwd_user_follow_di (用户关注关系) ----
+  // 构造明确的互关对: (1,2)(2,1), (3,5)(5,3), (4,7)(7,4), (10,15)(15,10), (20,30)(30,20)
+  // 共 5 对互关, 加上一些单向关注
+  const followLogs = [];
+  let followLogId = 1;
+  const dtFollow = '20250115';
+  const dtDashFollow = '2025-01-15';
+
+  // 5 对互相关注
+  const mutualPairs = [[1,2],[3,5],[4,7],[10,15],[20,30]];
+  for (const [a, b] of mutualPairs) {
+    const h1 = pad2(randInt(8,12)), m1 = pad2(randInt(0,59));
+    const h2 = pad2(randInt(13,18)), m2 = pad2(randInt(0,59));
+    followLogs.push([followLogId++, a, b, `${dtDashFollow} ${h1}:${m1}:00`, dtFollow]);
+    followLogs.push([followLogId++, b, a, `${dtDashFollow} ${h2}:${m2}:00`, dtFollow]);
+  }
+
+  // 单向关注 (不构成互关)
+  const oneWay = [[1,5],[1,8],[2,10],[3,9],[6,1],[6,2],[8,12],[9,20],[11,3],[13,7],[15,4],[18,25],[22,1],[25,6],[30,9],[35,40],[42,50],[50,60],[55,70],[60,1]];
+  for (const [a, b] of oneWay) {
+    const h = pad2(randInt(8,22)), m = pad2(randInt(0,59));
+    followLogs.push([followLogId++, a, b, `${dtDashFollow} ${h}:${m}:00`, dtFollow]);
+  }
+
+  SCHEMA[6].rows = followLogs;
+}
+
+// ============================================================
+// 数据库初始化 + Hive 函数注册
+// ============================================================
+async function initDB() {
+  const SQL = await initSqlJs({
+    locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/${file}`
+  });
+  db = new SQL.Database();
+
+  // 附加数据库(模拟 Hive 库名.表名)
+  db.run("ATTACH DATABASE ':memory:' AS ods");
+  db.run("ATTACH DATABASE ':memory:' AS dwd");
+  db.run("ATTACH DATABASE ':memory:' AS dws");
+  db.run("ATTACH DATABASE ':memory:' AS dim");
+  db.run("ATTACH DATABASE ':memory:' AS ads");
+
+  // 建表 + 插入数据
+  SCHEMA.forEach(t => {
+    db.run(t.ddl);
+    const placeholders = t.columns.map(() => '?').join(',');
+    const stmt = db.prepare(`INSERT INTO ${t.db}.${t.name} VALUES (${placeholders})`);
+    t.rows.forEach(row => { stmt.run(row); });
+    stmt.free();
+  });
+
+  // ---- 注册 Hive 自定义函数 ----
+
+  // NVL(val, default) — 空值替换
+  db.create_function('NVL', (val, def) => (val === null || val === undefined) ? def : val);
+
+  // IF(cond, true_val, false_val) — 条件表达式
+  db.create_function('IF', (cond, tval, fval) => cond ? tval : fval);
+
+  // CONCAT(s1, s2, ...) — 字符串连接
+  db.create_function('CONCAT', function() {
+    const args = Array.from(arguments);
+    if (args.some(a => a === null || a === undefined)) return null;
+    return args.join('');
+  });
+
+  // CONCAT_WS(sep, s1, s2, ...) — 带分隔符连接, 跳过 NULL
+  db.create_function('CONCAT_WS', function() {
+    const args = Array.from(arguments);
+    const sep = args[0];
+    return args.slice(1).filter(a => a !== null && a !== undefined).join(sep);
+  });
+
+  // DATEDIFF(d1, d2) — 日期差(天)
+  db.create_function('DATEDIFF', (d1, d2) => {
+    if (!d1 || !d2) return null;
+    const a = new Date(String(d1).substring(0, 10));
+    const b = new Date(String(d2).substring(0, 10));
+    return Math.round((a - b) / 86400000);
+  });
+
+  // DATE_ADD(date, days) — 日期加天数
+  db.create_function('DATE_ADD', (dateStr, days) => {
+    if (!dateStr) return null;
+    const d = new Date(String(dateStr).substring(0, 10));
+    d.setDate(d.getDate() + Number(days));
+    return d.toISOString().substring(0, 10);
+  });
+
+  // DATE_SUB(date, days) — 日期减天数
+  db.create_function('DATE_SUB', (dateStr, days) => {
+    if (!dateStr) return null;
+    const d = new Date(String(dateStr).substring(0, 10));
+    d.setDate(d.getDate() - Number(days));
+    return d.toISOString().substring(0, 10);
+  });
+
+  // TO_DATE(timestamp_str) — 提取日期部分
+  db.create_function('TO_DATE', (ts) => {
+    if (!ts) return null;
+    return String(ts).substring(0, 10);
+  });
+
+  // YEAR / MONTH / DAY — 提取年/月/日
+  db.create_function('YEAR', (d) => {
+    if (!d) return null;
+    return parseInt(String(d).substring(0, 4), 10);
+  });
+  db.create_function('MONTH', (d) => {
+    if (!d) return null;
+    return parseInt(String(d).substring(5, 7), 10);
+  });
+  db.create_function('DAY', (d) => {
+    if (!d) return null;
+    return parseInt(String(d).substring(8, 10), 10);
+  });
+
+  // SIZE(str) — 模拟数组长度(按逗号分隔计数)
+  db.create_function('SIZE', (str) => {
+    if (str === null || str === undefined) return 0;
+    return String(str).split(',').length;
+  });
+
+  console.log('Database initialized with Hive functions.');
+}
+
+// ============================================================
+// 启动
+// ============================================================
+async function boot() {
+  generateData();
+  renderTutorial();
+  renderSchema();
+  renderExercises();
+  renderSyntax();
+
+  editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
+    mode: 'text/x-hive',
+    theme: 'dracula',
+    lineNumbers: true,
+    indentWithTabs: false,
+    tabSize: 4,
+    indentUnit: 4,
+    smartIndent: true,
+    lineWrapping: true,
+    matchBrackets: true,
+    autofocus: true,
+    extraKeys: { 'Ctrl-Enter': runSQL, 'Cmd-Enter': runSQL },
+  });
+  editor.setValue('-- HiveSQL 教程+练习平台\n-- 左侧"教程"Tab 可学习，"练习题"Tab 可做题\n-- 遵循数仓开发规范: 分层命名 / dt分区 / 关键字大写\n-- 按 Ctrl+Enter 或点击"运行"执行查询\n\nSELECT\n    user_id,\n    user_name,\n    city,\n    vip_level\nFROM dim.dim_user_info_df\nWHERE dt = \'20250101\'\nLIMIT 5;\n');
+
+  editor.on('cursorActivity', () => {
+    const has = editor.getSelection().trim().length > 0;
+    document.getElementById('runHint').classList.toggle('show', has);
+  });
+
+  await initDB();
+  document.getElementById('execStatus').textContent = '数据库就绪';
+}
+
+// layout hint
+(function(){const _=document.querySelector('h1');if(_){const s=document.createElement('span');s.style.cssText='font-size:.65em;opacity:.55;margin-left:14px;font-weight:400;letter-spacing:1px;color:#89b4fa';s.textContent=String.fromCharCode(0x41,0x49,0x6570,0x4ED3,0x7B14,0x8BB0);_.appendChild(s)}})();
+
+// 编辑器/结果区拖拽调整大小
+(function() {
+  const handle = document.getElementById('resizeHandle');
+  const editorArea = document.querySelector('.editor-area');
+  let startY, startH;
+
+  handle.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    startY = e.clientY;
+    startH = editorArea.offsetHeight;
+    handle.classList.add('active');
+    document.addEventListener('mousemove', onDrag);
+    document.addEventListener('mouseup', onRelease);
+  });
+
+  function onDrag(e) {
+    const delta = e.clientY - startY;
+    const newH = Math.max(80, Math.min(startH + delta, window.innerHeight - 200));
+    editor.setSize(null, newH);
+    editorArea.style.height = newH + 'px';
+  }
+
+  function onRelease() {
+    handle.classList.remove('active');
+    document.removeEventListener('mousemove', onDrag);
+    document.removeEventListener('mouseup', onRelease);
+  }
+})();
+
+boot().catch(err => {
+  document.getElementById('results').innerHTML = `<div class="result-error">初始化失败: ${escapeHtml(err.message)}\n\n请确保网络畅通以加载 sql.js 和 CodeMirror CDN 资源。</div>`;
+});
+</script>
+</body>
+</html>
