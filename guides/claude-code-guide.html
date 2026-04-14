@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Code 完全指南（2026）</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #0b0d11;
+    --surface: #141820;
+    --surface2: #1a1f2e;
+    --border: #2a3040;
+    --text: #e0e4ec;
+    --text2: #8892a4;
+    --accent: #00d9ff;
+    --accent2: #7c5cfc;
+    --green: #00e68a;
+    --orange: #ff9f43;
+    --red: #ff5757;
+    --pink: #ff6b9d;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.8;
+    font-size: 18px;
+  }
+
+  /* === 顶部导航 === */
+  .topbar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 56px;
+    background: rgba(11,13,17,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 32px;
+    z-index: 100;
+  }
+  .topbar .logo {
+    font-size: 18px;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .topbar .version {
+    margin-left: 12px;
+    font-size: 12px;
+    color: var(--text2);
+    background: var(--surface2);
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+
+  /* === 侧边栏 === */
+  .sidebar {
+    position: fixed;
+    top: 56px;
+    left: 0;
+    width: 260px;
+    height: calc(100vh - 56px);
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 20px 0;
+    z-index: 50;
+  }
+  .sidebar a {
+    display: block;
+    padding: 8px 24px;
+    color: var(--text2);
+    text-decoration: none;
+    font-size: 14px;
+    transition: all 0.2s;
+    border-left: 3px solid transparent;
+  }
+  .sidebar a:hover, .sidebar a.active {
+    color: var(--accent);
+    background: rgba(0,217,255,0.05);
+    border-left-color: var(--accent);
+  }
+  .sidebar .nav-group {
+    padding: 16px 24px 6px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text2);
+    opacity: 0.6;
+  }
+
+  /* === 主内容区 === */
+  .main {
+    margin-left: 260px;
+    margin-top: 56px;
+    padding: 48px 80px;
+    max-width: none;
+    margin-right: 40px;
+  }
+
+  /* === Hero === */
+  .hero {
+    text-align: center;
+    padding: 80px 0 60px;
+    position: relative;
+  }
+  .hero h1 {
+    font-size: 48px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #fff 0%, var(--accent) 50%, var(--accent2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 16px;
+    line-height: 1.2;
+  }
+  .hero .subtitle {
+    font-size: 16px;
+    color: var(--text2);
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+  .hero .badge-row {
+    margin-top: 24px;
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 13px;
+    color: var(--text2);
+  }
+  .badge .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+  }
+
+  /* === 章节 === */
+  .chapter {
+    margin-bottom: 64px;
+    scroll-margin-top: 80px;
+  }
+  .chapter-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .chapter-num {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--bg);
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .key-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    background: linear-gradient(135deg, rgba(255,159,67,0.15), rgba(255,107,157,0.15));
+    border: 1px solid rgba(255,159,67,0.4);
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--orange);
+    letter-spacing: 1px;
+    margin-left: 12px;
+    vertical-align: middle;
+  }
+  .chapter-header h2 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  h3 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #fff;
+    margin: 32px 0 12px;
+  }
+  h4 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--accent);
+    margin: 24px 0 8px;
+  }
+
+  p { margin-bottom: 12px; }
+
+  strong { color: #fff; }
+
+  /* === 代码块 === */
+  pre {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    overflow-x: auto;
+    margin: 12px 0 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--green);
+  }
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    background: var(--surface2);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--accent);
+  }
+  pre code {
+    background: none;
+    padding: 0;
+    color: inherit;
+  }
+
+  /* === 表格 === */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0 20px;
+    font-size: 16px;
+  }
+  th {
+    text-align: left;
+    padding: 10px 14px;
+    background: var(--surface2);
+    color: var(--accent);
+    font-weight: 600;
+    border-bottom: 2px solid var(--border);
+  }
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+  }
+  tr:hover td { background: rgba(0,217,255,0.03); }
+
+  /* === 引用/提示框 === */
+  blockquote {
+    border-left: 3px solid var(--accent2);
+    background: rgba(124,92,252,0.08);
+    padding: 14px 20px;
+    margin: 16px 0;
+    border-radius: 0 8px 8px 0;
+    font-size: 16px;
+    color: var(--text2);
+  }
+  blockquote strong { color: var(--accent2); }
+
+  .tip {
+    border-left-color: var(--green);
+    background: rgba(0,230,138,0.06);
+  }
+  .tip strong { color: var(--green); }
+
+  .exp-box {
+    margin: 16px 0;
+    padding: 16px 20px;
+    background: rgba(0,217,255,0.06);
+    border: 1px solid rgba(0,217,255,0.3);
+    border-left: 4px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .exp-box .exp-icon {
+    font-size: 22px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .exp-box .exp-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 4px;
+    letter-spacing: 0.5px;
+  }
+  .exp-box .exp-text {
+    font-size: 15px;
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  .warn {
+    border-left-color: var(--orange);
+    background: rgba(255,159,67,0.06);
+  }
+  .warn strong { color: var(--orange); }
+
+  .danger {
+    border-left-color: var(--red);
+    background: rgba(255,87,87,0.06);
+  }
+
+  /* === 列表 === */
+  ul, ol {
+    margin: 8px 0 16px;
+    padding-left: 24px;
+  }
+  li {
+    margin-bottom: 6px;
+    color: var(--text);
+  }
+  li::marker { color: var(--accent); }
+
+  /* === 星标 === */
+  .stars { color: var(--orange); letter-spacing: 2px; }
+
+  /* === 分隔线 === */
+  hr {
+    border: none;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--border), transparent);
+    margin: 48px 0;
+  }
+
+  /* === 动画 === */
+  .chapter { animation: fadeInUp 0.6s ease-out; }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* === 三层架构图 === */
+  .arch-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px 28px;
+    margin: 16px 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    line-height: 1.9;
+  }
+  .arch-block .layer {
+    padding: 12px 16px;
+    margin: 8px 0;
+    border-radius: 6px;
+  }
+  .arch-block .layer-1 { background: rgba(0,217,255,0.08); border-left: 3px solid var(--accent); }
+  .arch-block .layer-2 { background: rgba(124,92,252,0.08); border-left: 3px solid var(--accent2); }
+  .arch-block .layer-3 { background: rgba(0,230,138,0.08); border-left: 3px solid var(--green); }
+  .arch-block .layer-title { font-weight: 600; margin-bottom: 6px; }
+  .arch-block .file-path { color: var(--text2); }
+  .arch-block .file-desc { color: var(--orange); }
+
+  /* === 流程图 === */
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin: 20px 0;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .flow-step {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--accent);
+    text-align: center;
+  }
+  .flow-arrow {
+    color: var(--text2);
+    font-size: 20px;
+    margin: 0 6px;
+  }
+
+  /* === 底部 === */
+  .footer {
+    margin-top: 80px;
+    padding: 32px 0;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    color: var(--text2);
+    font-size: 13px;
+  }
+
+  /* === 滚动条 === */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* === 响应式 === */
+  @media (max-width: 1024px) {
+    .sidebar { display: none; }
+    .main { margin-left: 0; padding: 32px 24px; margin-right: 0; }
+    .hero h1 { font-size: 32px; }
+  }
+
+  /* === 自定义鼠标 === */
+  *, *::before, *::after { cursor: none !important; }
+
+  .cursor-dot {
+    position: fixed;
+    width: 12px; height: 12px;
+    background: var(--accent);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 99999;
+    transform: translate(-50%, -50%);
+    box-shadow:
+      0 0 8px rgba(0,217,255,0.8),
+      0 0 20px rgba(0,217,255,0.4),
+      0 0 40px rgba(0,217,255,0.2);
+    transition: width 0.15s, height 0.15s, background 0.15s;
+  }
+  .cursor-dot.hover {
+    width: 18px; height: 18px;
+    background: var(--accent2);
+    box-shadow:
+      0 0 10px rgba(124,92,252,0.8),
+      0 0 25px rgba(124,92,252,0.4),
+      0 0 50px rgba(124,92,252,0.2);
+  }
+
+  .cursor-glow {
+    position: fixed;
+    width: 120px; height: 120px;
+    background: radial-gradient(circle, rgba(0,217,255,0.08) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 99998;
+    transform: translate(-50%, -50%);
+    transition: opacity 0.3s;
+  }
+
+  .sparkle {
+    position: fixed;
+    pointer-events: none;
+    z-index: 99997;
+    border-radius: 50%;
+    animation: sparkle-fade 0.8s ease-out forwards;
+  }
+  @keyframes sparkle-fade {
+    0% { transform: translate(-50%,-50%) scale(1); opacity: 1; }
+    100% { transform: translate(-50%,-50%) scale(0) translateY(-20px); opacity: 0; }
+  }
+
+  /* 光标呼吸脉冲（静止时） */
+  .cursor-dot.idle {
+    animation: cursor-breathe 2s ease-in-out infinite;
+  }
+  @keyframes cursor-breathe {
+    0%, 100% { box-shadow: 0 0 8px rgba(0,217,255,0.8), 0 0 20px rgba(0,217,255,0.4), 0 0 40px rgba(0,217,255,0.2); }
+    50% { box-shadow: 0 0 14px rgba(0,217,255,1), 0 0 35px rgba(0,217,255,0.6), 0 0 60px rgba(0,217,255,0.3); }
+  }
+</style>
+</head>
+<body>
+
+<!-- 顶部导航 -->
+<div class="topbar">
+  <span class="logo">Claude Code 完全指南</span>
+  <span class="version">2026 Edition</span>
+</div>
+
+<!-- 侧边栏 -->
+<nav class="sidebar">
+  <div class="nav-group">入门</div>
+  <a href="#p1">P1 安装配置</a>
+  <a href="#p2">P2 核心工作流</a>
+  <div class="nav-group">核心</div>
+  <a href="#p3">P3 CLAUDE.md + 记忆系统 ★</a>
+  <a href="#p4">P4 省 Token + 成本控制 ★</a>
+  <a href="#p5">P5 Git 集成</a>
+  <div class="nav-group">进阶</div>
+  <a href="#p6">P6 Commands + Skills ★</a>
+  <a href="#p7">P7 Hooks 自动化</a>
+  <a href="#p8">P8 MCP 服务器</a>
+  <a href="#p9">P9 多 Agent 协作 ★</a>
+</nav>
+
+<!-- 主内容 -->
+<div class="main">
+
+<!-- Hero -->
+<div class="hero">
+  <h1>Claude Code<br>完全指南</h1>
+  <p class="subtitle">从入门到工程实践</p>
+  <div class="badge-row">
+    <span class="badge"><span class="dot"></span>2026-04-09 更新</span>
+    <span class="badge">9 个章节</span>
+    <span class="badge">283 知识点</span>
+    <span class="badge">实战验证</span>
+  </div>
+</div>
+
+<hr>
+
+<!-- ====== P1 ====== -->
+<div class="chapter" id="p1">
+<div class="chapter-header">
+  <div class="chapter-num">P1</div>
+  <h2>是什么 + 安装配置 <span class="key-badge">重点</span></h2>
+</div>
+
+<h3>1.1 Claude Code 是什么</h3>
+<p>Claude Code 是 Anthropic 推出的<strong>命令行 AI 编程代理</strong>，一个拥有完整系统访问权限的终端程序——能读写文件、执行命令、搜索代码、管理 Git、调用外部工具进行编码的智能体。</p>
+
+<p><strong>核心设计理念：</strong>不搞花哨的预处理，用最直接的方式完成任务。</p>
+
+<p>很多 AI 编程工具（如 Cursor）在打开你的项目时，会先把所有代码建成索引数据库，你问问题时再从数据库里检索：</p>
+
+<!-- 传统方式架构图 -->
+<div style="margin:24px 0;padding:28px;background:var(--surface);border:1px solid var(--border);border-radius:12px;">
+  <div style="text-align:center;margin-bottom:16px;font-size:15px;color:var(--text2);letter-spacing:1px;">传统 AI 编程工具（Cursor 等）</div>
+  <div style="display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap;">
+    <!-- 代码库 -->
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;text-align:center;min-width:100px;">
+      <div style="font-size:24px;margin-bottom:4px;">📁</div>
+      <div style="font-size:15px;color:var(--text);">你的代码库</div>
+    </div>
+    <div style="color:var(--text2);font-size:18px;margin:0 10px;">→</div>
+    <!-- 索引 -->
+    <div style="background:rgba(255,159,67,0.1);border:1px solid rgba(255,159,67,0.3);border-radius:8px;padding:14px 18px;text-align:center;min-width:100px;">
+      <div style="font-size:24px;margin-bottom:4px;">🗄️</div>
+      <div style="font-size:15px;color:var(--orange);">向量索引库</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:2px;">预处理 · 嵌入</div>
+    </div>
+    <div style="color:var(--text2);font-size:18px;margin:0 10px;">→</div>
+    <!-- RAG -->
+    <div style="background:rgba(255,159,67,0.1);border:1px solid rgba(255,159,67,0.3);border-radius:8px;padding:14px 18px;text-align:center;min-width:100px;">
+      <div style="font-size:24px;margin-bottom:4px;">🔍</div>
+      <div style="font-size:15px;color:var(--orange);">RAG 检索</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:2px;">语义匹配</div>
+    </div>
+    <div style="color:var(--text2);font-size:18px;margin:0 10px;">→</div>
+    <!-- 模型 -->
+    <div style="background:rgba(255,159,67,0.1);border:1px solid rgba(255,159,67,0.3);border-radius:8px;padding:14px 18px;text-align:center;min-width:100px;">
+      <div style="font-size:24px;margin-bottom:4px;">🤖</div>
+      <div style="font-size:15px;color:var(--orange);">AI 模型</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:2px;">生成代码</div>
+    </div>
+  </div>
+  <div style="text-align:center;margin-top:14px;font-size:14px;color:var(--text2);">前期复杂但后续省 Token · 需要预处理 · 建索引 · 占存储 · 索引可能过时</div>
+</div>
+
+<p>Claude Code 不做这些——它每次启动时对你的项目一无所知，需要什么就直接用系统命令搜索，搜到了就读，读懂了就改，改完跑测试，没通过就继续搜、继续改，<strong>不断循环直到任务完成</strong>。</p>
+
+<!-- Claude Code 架构图 -->
+<div style="margin:24px 0;padding:28px;background:var(--surface);border:1px solid var(--border);border-radius:12px;">
+  <div style="text-align:center;margin-bottom:16px;font-size:15px;color:var(--text2);letter-spacing:1px;">Claude Code 的方式</div>
+  <!-- 中心模型 -->
+  <div style="display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap;">
+    <!-- 工具组 -->
+    <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;">
+      <div style="background:rgba(0,217,255,0.1);border:1px solid rgba(0,217,255,0.3);border-radius:6px;padding:8px 14px;font-size:15px;color:var(--accent);display:flex;align-items:center;gap:8px;">
+        <span>📂 读写文件</span>
+      </div>
+      <div style="background:rgba(0,217,255,0.1);border:1px solid rgba(0,217,255,0.3);border-radius:6px;padding:8px 14px;font-size:15px;color:var(--accent);display:flex;align-items:center;gap:8px;">
+        <span>🔎 grep / glob 搜索</span>
+      </div>
+      <div style="background:rgba(0,217,255,0.1);border:1px solid rgba(0,217,255,0.3);border-radius:6px;padding:8px 14px;font-size:15px;color:var(--accent);display:flex;align-items:center;gap:8px;">
+        <span>⚡ 执行命令 (Bash)</span>
+      </div>
+      <div style="background:rgba(0,217,255,0.1);border:1px solid rgba(0,217,255,0.3);border-radius:6px;padding:8px 14px;font-size:15px;color:var(--accent);display:flex;align-items:center;gap:8px;">
+        <span>🔀 Git 操作</span>
+      </div>
+      <div style="background:rgba(0,217,255,0.1);border:1px solid rgba(0,217,255,0.3);border-radius:6px;padding:8px 14px;font-size:15px;color:var(--accent);display:flex;align-items:center;gap:8px;">
+        <span>🌐 网络访问</span>
+      </div>
+    </div>
+    <!-- 连接线 -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--text2);">
+      <span>←</span><span>←</span><span>←</span><span>←</span><span>←</span>
+    </div>
+    <!-- 核心 -->
+    <div style="background:linear-gradient(135deg,rgba(0,217,255,0.15),rgba(124,92,252,0.15));border:2px solid rgba(0,217,255,0.4);border-radius:16px;padding:24px 28px;text-align:center;min-width:160px;position:relative;">
+      <div style="font-size:36px;margin-bottom:8px;">🧠</div>
+      <div style="font-size:16px;font-weight:700;color:#fff;">Claude 模型</div>
+      <div style="font-size:12px;color:var(--accent);margin-top:4px;">Opus 4.6</div>
+      <!-- 循环箭头 -->
+      <div style="position:absolute;bottom:-28px;left:50%;transform:translateX(-50%);font-size:12px;color:var(--green);">🔄 循环直到完成</div>
+    </div>
+    <!-- 连接线 -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--text2);">
+      <span>→</span><span>→</span><span>→</span>
+    </div>
+    <!-- 输出 -->
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <div style="background:rgba(0,230,138,0.1);border:1px solid rgba(0,230,138,0.3);border-radius:6px;padding:8px 14px;font-size:15px;color:var(--green);display:flex;align-items:center;gap:8px;">
+        <span>✏️ 写代码</span>
+      </div>
+      <div style="background:rgba(0,230,138,0.1);border:1px solid rgba(0,230,138,0.3);border-radius:6px;padding:8px 14px;font-size:15px;color:var(--green);display:flex;align-items:center;gap:8px;">
+        <span>🧪 跑测试</span>
+      </div>
+      <div style="background:rgba(0,230,138,0.1);border:1px solid rgba(0,230,138,0.3);border-radius:6px;padding:8px 14px;font-size:15px;color:var(--green);display:flex;align-items:center;gap:8px;">
+        <span>🚀 部署上线</span>
+      </div>
+    </div>
+  </div>
+  <div style="text-align:center;margin-top:36px;font-size:14px;color:var(--text2);">简单但费 Token · 零预处理 · 打开终端就能干活 · 搜索→理解→编码→验证→修正</div>
+</div>
+
+<p>就像一个新人工程师入职第一天：先翻目录看项目结构，再搜关键词找到相关代码，读懂之后自己写新代码，写完验证，有错就改。整个过程不需要任何预先准备，打开终端就能干活。</p>
+
+<h3>1.2 安装</h3>
+
+<h4>环境要求</h4>
+<ul>
+<li>Node.js 18+</li>
+<li>Git</li>
+</ul>
+
+<h4>Step 1：安装（三种方式任选一种）</h4>
+<pre>
+# 方式一：官方推荐（一键安装）
+curl -fsSL https://claude.ai/install.sh | bash
+
+# 方式二：npm
+npm install -g @anthropic-ai/claude-code
+
+# 方式三：Homebrew（Mac）
+brew install claude-code
+</pre>
+
+<h4>Step 2：进入工作空间，启动 Claude Code</h4>
+<pre>
+# cd 到你自己的项目目录
+cd ~/your-workspace
+
+# 启动
+claude
+</pre>
+
+<p>不同设备的安装命令可以参考官方文档，根据自己的系统选择对应的方式：</p>
+<p><a href="https://code.claude.com/docs/zh-CN/overview#native-install-recommended" target="_blank" style="color:var(--accent);text-decoration:none;border-bottom:1px dashed var(--accent);">官方安装文档 →</a></p>
+
+<h4>订阅方案</h4>
+<table>
+<tr><th>方案</th><th>价格</th><th>说明</th></tr>
+<tr><td><strong>Pro</strong></td><td>$20/月</td><td>基础用量，轻度使用很快撞限额。Opus → Sonnet → Haiku 逐级降级</td></tr>
+<tr><td><strong>Max</strong></td><td>$100-200/月</td><td><strong>推荐最低方案</strong>。$100 计划实际提供至少 $1000 价值的额度</td></tr>
+<tr><td><strong>Team</strong></td><td>按人头</td><td>团队协作，共享配置</td></tr>
+</table>
+
+<blockquote class="warn"><strong>痛点提示：</strong>$20 方案体验很差——频繁撞限额、降到 Haiku。认真开发至少 $100/月 的 Max。</blockquote>
+
+</div>
+
+<hr>
+
+<!-- ====== P2 ====== -->
+<div class="chapter" id="p2">
+<div class="chapter-header">
+  <div class="chapter-num">P2</div>
+  <h2>核心工作流：从第一次对话到完成项目</h2>
+</div>
+
+<h3>2.1 权限模式（Shift+Tab 切换）</h3>
+<p>Claude Code 通过 <code>Shift + Tab</code> 在不同权限模式间切换，控制 Claude 在多大程度上需要你确认才能执行操作。一共有 6 种模式，默认循环前 3 种，其他需要启用才出现：</p>
+
+<table>
+<tr><th>权限模式</th><th>行为</th><th>适用场景</th><th>默认可用</th></tr>
+<tr><td><strong>Default（Ask）</strong></td><td>每次操作都问你确认</td><td>敏感操作、学习阶段</td><td>是</td></tr>
+<tr><td><strong>Accept Edits</strong></td><td>自动允许文件编辑，其他仍需确认</td><td>日常开发</td><td>是</td></tr>
+<tr><td><strong>Plan</strong></td><td>只分析和规划，不动代码</td><td>复杂任务先看方案</td><td>是</td></tr>
+<tr><td><strong>Bypass Permissions</strong></td><td>完全跳过所有权限确认</td><td>完全信任 AI</td><td>需启用</td></tr>
+<tr><td><strong>Auto</strong></td><td>LLM 自动判断是否需要确认</td><td>智能平衡</td><td>需启用</td></tr>
+<tr><td><strong>Don't Ask</strong></td><td>不再询问</td><td>批量操作</td><td>需启用</td></tr>
+</table>
+
+<p>从上到下，从最谨慎到最放开。也可以通过 <code>settings.json</code> 设置启动时的默认模式，或者用启动参数 <code>claude --dangerously-skip-permissions</code> 直接进入 Bypass 模式。</p>
+
+<blockquote class="tip"><strong>settings.json 配置权限规则：</strong>不管用哪种模式，都可以在 settings.json 里预设 allow/deny 规则，细粒度控制哪些命令自动放行、哪些必须拦截。
+<pre style="margin:8px 0 0;font-size:14px;">
+{
+  "permissions": {
+    "allow": ["Bash(git *)", "Read(*)"],
+    "deny": ["Bash(rm -rf*)", "Bash(sudo *)"]
+  }
+}
+</pre>
+</blockquote>
+
+<div class="exp-box"><div class="exp-icon">💡</div><div><div class="exp-label">实战经验</div><div class="exp-text">我用 <code>claude --dangerously-skip-permissions</code> 启动直接进入 Bypass 模式，配合 CLAUDE.md 里的规则做约束，日常使用基本无感。如果你在 CLAUDE.md 里定义了完整的工作流门控（比如"改代码前必须等用户确认"），Bypass 模式也不会乱来。</div></div></div>
+
+<h3>2.2 标准工作流（社区推荐）</h3>
+
+<div class="flow">
+  <div class="flow-step">规划 Plan</div>
+  <span class="flow-arrow">→</span>
+  <div class="flow-step">编码 Auto</div>
+  <span class="flow-arrow">→</span>
+  <div class="flow-step">测试 Test</div>
+  <span class="flow-arrow">→</span>
+  <div class="flow-step">提交 Commit</div>
+</div>
+
+<h4>构建验证循环 <span class="stars">★★★★★</span></h4>
+<p><strong>这是让 AI 代码质量从"凑合"变成"可用"的最关键实践。</strong>没有它是 AI 产出质量差的最常见原因。</p>
+<pre>
+## 构建验证循环
+修改代码后必须执行：
+1. 编译/构建
+2. 产物验证（确认改动生效）
+3. 测试（单元测试或冒烟测试）
+任何一步失败，修复后重新执行全部步骤。
+</pre>
+
+<h3>2.3 命令与快捷键速查</h3>
+
+<table>
+<tr><th>命令/快捷键</th><th>作用</th></tr>
+<tr><td><code>/init</code></td><td>扫描项目，生成 CLAUDE.md</td></tr>
+<tr><td><code>/clear</code></td><td>清空对话历史</td></tr>
+<tr><td><code>/compact</code></td><td>压缩对话为摘要</td></tr>
+<tr><td><code>/cost</code> / <code>/usage</code></td><td>查看费用/用量</td></tr>
+<tr><td><code>/model</code></td><td>切换模型</td></tr>
+<tr><td><code>/memory</code></td><td>查看/编辑记忆文件</td></tr>
+<tr><td><code>/insights</code></td><td>使用洞察报告</td></tr>
+<tr><td><code>Shift+Tab</code></td><td>切换 Ask/Auto/Plan</td></tr>
+<tr style="background:rgba(0,217,255,0.08);"><td><code style="background:var(--accent);color:var(--bg);padding:3px 10px;border-radius:4px;font-weight:700;">Esc</code> <span style="font-size:11px;color:var(--orange);font-weight:600;">常用</span></td><td><strong>中断 AI（不浪费 Token）</strong></td></tr>
+<tr><td><code>Ctrl+B</code></td><td>任务切到后台</td></tr>
+<tr style="background:rgba(0,217,255,0.08);"><td><code style="background:var(--accent);color:var(--bg);padding:3px 10px;border-radius:4px;font-weight:700;">!</code> <span style="font-size:11px;color:var(--orange);font-weight:600;">常用</span></td><td><strong>直接运行 Bash 命令</strong></td></tr>
+<tr><td><code>#</code></td><td>快速添加指令到记忆</td></tr>
+</table>
+
+<h3>2.4 提示词技巧</h3>
+<p>遇到难题时加 <code>think hard</code>，Claude 会花更多时间思考。发现方向不对立刻按 <code>Esc</code>，中断代价低。</p>
+</div>
+
+<hr>
+
+<!-- ====== P3 ====== -->
+<div class="chapter" id="p3">
+<div class="chapter-header">
+  <div class="chapter-num">P3</div>
+  <h2>CLAUDE.md 与记忆管理系统 <span class="key-badge">重点</span></h2>
+</div>
+
+<blockquote><strong>这是 Claude Code 最核心的知识。</strong>Claude Code 的"记忆"和"行为"完全由文件控制。</blockquote>
+
+<h3>3.1 三层配置架构</h3>
+
+<div class="arch-block">
+  <div style="margin-bottom:8px;font-size:13px;color:var(--text2);">
+    <span style="display:inline-flex;align-items:center;gap:4px;margin-right:16px;"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--green);"></span> 仅本地保留</span>
+    <span style="display:inline-flex;align-items:center;gap:4px;"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--accent2);"></span> 提交到 Git（团队共享）</span>
+  </div>
+  <div class="layer layer-1">
+    <div class="layer-title" style="color:var(--accent)">第一层：全局配置（所有项目生效） <span style="font-size:15px;font-weight:400;color:var(--green);">— 全部仅本地</span></div>
+    <span class="file-path">~/.claude/CLAUDE.md</span> <span class="file-desc">← 编码习惯、通用规则</span><br>
+    <span class="file-path">~/.claude/commands/</span> <span class="file-desc">← 全局命令</span><br>
+    <span class="file-path">~/.claude/skills/</span> <span class="file-desc">← 全局技能</span><br>
+    <span class="file-path">~/.claude/settings.json</span> <span class="file-desc">← 权限设置</span>
+  </div>
+  <div class="layer layer-2">
+    <div class="layer-title" style="color:var(--accent2)">第二层：项目配置（单个项目生效）</div>
+    <span class="file-path">项目根/CLAUDE.md</span> <span class="file-desc">← 技术栈、规范、架构</span> <span style="font-size:14px;padding:3px 8px;border-radius:4px;background:rgba(124,92,252,0.2);color:var(--accent2);">提交 Git</span><br>
+    <span class="file-path">项目根/.claude/commands/</span> <span class="file-desc">← 项目命令</span> <span style="font-size:14px;padding:3px 8px;border-radius:4px;background:rgba(124,92,252,0.2);color:var(--accent2);">提交 Git</span><br>
+    <span class="file-path">项目根/.claude/skills/</span> <span class="file-desc">← 项目技能</span> <span style="font-size:14px;padding:3px 8px;border-radius:4px;background:rgba(124,92,252,0.2);color:var(--accent2);">提交 Git</span><br>
+    <span class="file-path">项目根/.claude/settings.json</span> <span class="file-desc">← 项目权限</span> <span style="font-size:14px;padding:3px 8px;border-radius:4px;background:rgba(124,92,252,0.2);color:var(--accent2);">提交 Git</span><br>
+    <span class="file-path">项目根/.claude/settings.local.json</span> <span class="file-desc">← 本地权限</span> <span style="font-size:14px;padding:3px 8px;border-radius:4px;background:rgba(0,230,138,0.2);color:var(--green);">仅本地</span>
+  </div>
+  <div class="layer layer-3">
+    <div class="layer-title" style="color:var(--green)">第三层：对话/记忆（自动管理） <span style="font-size:15px;font-weight:400;color:var(--green);">— 全部仅本地</span></div>
+    <span class="file-path">~/.claude/projects/{路径}/memory/MEMORY.md</span> <span class="file-desc">← 记忆索引</span><br>
+    <span class="file-path">feedback_*.md / project_*.md / user_*.md</span> <span class="file-desc">← 分类记忆</span><br>
+    <span class="file-path">~/.claude/projects/{路径}/sessions/</span> <span class="file-desc">← 会话存档</span>
+  </div>
+</div>
+
+<!-- 实战案例 -->
+<h3>3.2 实战案例：DataNote 项目的完整配置</h3>
+<p>以下是一个真实项目的三层配置全貌，展示每一层应该放什么内容：</p>
+
+<div style="margin:20px 0;padding:24px;background:var(--surface);border:1px solid var(--border);border-radius:12px;">
+
+  <!-- 第一层 -->
+  <div style="margin-bottom:20px;padding:16px 20px;background:rgba(0,217,255,0.06);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;">
+    <div style="font-weight:700;color:var(--accent);margin-bottom:10px;font-size:16px;">第一层：全局 CLAUDE.md — 跨项目通用规则</div>
+<pre style="margin:0;font-size:15px;background:rgba(0,0,0,0.3);border:none;">
+# Claude Code 全局规则
+
+## 语言
+所有回复和解释用中文。
+
+## Agent 路由
+搜索/翻译用 Sonnet，其他全部用 Opus。
+
+## 行为准则
+问问题先回答，改文件/写代码前必须等用户明确确认再动手。
+</pre>
+    <div style="margin-top:8px;font-size:14px;color:var(--text2);">全局 commands：notebooklm、yt-pipeline &nbsp;|&nbsp; 全局 skills：youtube-search、wechat-article、skill-creator 等 7 个</div>
+  </div>
+
+  <!-- 第二层 -->
+  <div style="margin-bottom:20px;padding:16px 20px;background:rgba(124,92,252,0.06);border-left:3px solid var(--accent2);border-radius:0 8px 8px 0;">
+    <div style="font-weight:700;color:var(--accent2);margin-bottom:10px;font-size:16px;">第二层：项目 CLAUDE.md — 技术栈 + 工作流 + 红线规则</div>
+<pre style="margin:0;font-size:15px;background:rgba(0,0,0,0.3);border:none;">
+# DataNote 项目规则
+
+## 技术栈约束
+- Java 8（不用 var、text block、record）
+- Spring Boot 2.7.18 + MyBatis-Plus 3.5.5
+- 前端：单文件 SPA workspace.html（vanilla JS，不用框架）
+- 数据库：MySQL 8.0 + Hive
+
+## 默认工作流
+收到开发任务时自动执行：
+1. 需求分析 → 输出方案 → 等用户确认（确认前不写代码）
+2. 开发实现
+3. 代码自检（Java 8 兼容、循环依赖、SQL 注入、XSS）
+4. 测试验证（编译 + 产物验证 + API curl 测试）
+5. 5 步门控部署（停进程→编译→产物验证→启动→冒烟测试）
+</pre>
+    <div style="margin-top:8px;font-size:14px;color:var(--text2);">项目 commands：analyze、dbcheck、deploy、dispatch、frontcheck、jscheck、review、test &nbsp;|&nbsp; 项目 agents：8 个对应的子智能体</div>
+  </div>
+
+  <!-- 第三层 -->
+  <div style="padding:16px 20px;background:rgba(0,230,138,0.06);border-left:3px solid var(--green);border-radius:0 8px 8px 0;">
+    <div style="font-weight:700;color:var(--green);margin-bottom:10px;font-size:16px;">第三层：记忆文件 — Claude 自动积累的经验</div>
+<pre style="margin:0;font-size:15px;background:rgba(0,0,0,0.3);border:none;">
+MEMORY.md（索引）
+├── feedback_confirm_before_action.md — "问问题先答，改代码等指令"
+├── feedback_datanote_restart.md     — "必须用 lsof 按端口杀旧进程"
+├── feedback_ui_flow_order.md        — "表单按操作逻辑排列"
+├── feedback_test_before_deliver.md  — "改代码前 grep 所有入口画调用链"
+├── user_ui_aesthetic.md             — "干净、对齐、完整、克制的工程师审美"
+├── project_docker_packaging.md      — "Docker 全栈打包方案"
+└── reference_bilibili_api.md        — "B站 API 接口整理"
+</pre>
+    <div style="margin-top:8px;font-size:14px;color:var(--text2);">记忆会随着使用自动积累。每次犯错被纠正 → 存为 feedback；用户偏好 → 存为 user；项目决策 → 存为 project</div>
+  </div>
+
+</div>
+
+
+<h3>3.3 记忆系统</h3>
+<table>
+<tr><th>类型</th><th>说明</th></tr>
+<tr><td><strong>CLAUDE.md</strong></td><td>手动编写的规则，每轮加载</td></tr>
+<tr><td><strong>自动记忆（MEMORY.md）</strong></td><td>Claude 自动总结的经验，存为独立 md 文件，MEMORY.md 作为索引，跨会话长期有效</td></tr>
+<tr><td><strong>会话记忆（上下文压缩）</strong></td><td>压缩时的临时摘要，只为当前会话服务</td></tr>
+</table>
+
+</div>
+
+<hr>
+
+<!-- ====== P4 ====== -->
+<div class="chapter" id="p4">
+<div class="chapter-header">
+  <div class="chapter-num">P4</div>
+  <h2>省 Token 的艺术：上下文管理与成本控制 <span class="key-badge">重点</span></h2>
+</div>
+
+<p>上下文窗口 = Claude 一次对话能"记住"的信息量。默认 20 万 Token，可扩展到 100 万（即 1M context，和 Max 订阅中的"1 兆上下文"是同一个概念）。</p>
+
+<h3>省 Token 最佳实践</h3>
+<ol>
+<li><strong>新鲜上下文胜过臃肿上下文</strong></li>
+<li><strong>勤用 <code>/clear</code></strong> — 完成任务后清空</li>
+<li><strong>小任务分解</strong> — 不要一次给巨大任务</li>
+<li><strong>CLAUDE.md 不要太长</strong> — 每条消息都重新注入</li>
+<li><strong>MCP 不要贪多</strong> — 每个 MCP 占上下文</li>
+<li><strong>Plan → Clear → Execute</strong> — 规划后清空再执行</li>
+<li><strong>大文件建索引</strong> — 项目中的大文件（如 8000 行的前端单文件）会占用大量上下文。正确做法是单独创建一个索引文件（如 <code>index_workspace_html.md</code>），记录每个模块的行号范围，然后在 CLAUDE.md 里用 <code>@</code> 引用。这样索引不会每轮加载，只有 Claude 需要查这个大文件时才会去读索引，按需定位到具体行号范围，避免加载整个文件</li>
+<li><strong>用子 Agent 隔离上下文</strong> — 把任务分给子 Agent 执行，子 Agent 结束后它的上下文就释放了，不会把搜索、分析过程中产生的大量中间结果堆到主会话里。主 Agent 只收到最终结果，上下文保持干净</li>
+</ol>
+
+<h4>/compact 手动压缩</h4>
+<p>实测从 24% 降到 13% Token 使用率。可附加提示词指定保留内容。</p>
+
+<h4>成本监控</h4>
+<pre>
+/cost      # 当前会话 API 费用
+/usage     # 订阅用量
+/insights  # 完整使用洞察报告
+</pre>
+</div>
+
+<hr>
+
+<!-- ====== P5 ====== -->
+<div class="chapter" id="p5">
+<div class="chapter-header">
+  <div class="chapter-num">P5</div>
+  <h2>Git 深度集成</h2>
+</div>
+
+<p><strong>Git 是比 Claude Code 内置回退更可靠的安全网。核心原则：尽早且频繁提交。</strong></p>
+
+<h3>日常操作（个人开发者最常用）</h3>
+<pre>
+"帮我提交这次修改，写好 commit message"
+"推送到 GitHub"
+"拉取最新代码"
+"看一下最近的提交历史"
+</pre>
+<p>提交历史就是你的开发日志。</p>
+
+<h3>团队协作场景</h3>
+<ul>
+<li><strong>PR 工作流</strong>：Claude 自动创建分支、推送、创建 PR</li>
+<li><strong>AI 代码审查</strong>：<code>/review</code> 和 <code>/security-review</code></li>
+<li><strong>GitHub Actions</strong>：Issue → 自动修复 → 审查 → 合并 → 部署</li>
+</ul>
+</div>
+
+<hr>
+
+<!-- ====== P6 ====== -->
+<div class="chapter" id="p6">
+<div class="chapter-header">
+  <div class="chapter-num">P6</div>
+  <h2>自定义命令 + Skills 技能系统 <span class="key-badge">重点</span></h2>
+</div>
+
+<h3>Commands vs Skills vs MCP</h3>
+<table>
+<tr><th>层次</th><th>定位</th><th>加载方式</th></tr>
+<tr><td><strong>Commands</strong></td><td>手动调用的斜杠命令</td><td>手动触发</td></tr>
+<tr><td><strong>Skills</strong></td><td>知识和指令（what to do）</td><td>按需自动加载</td></tr>
+<tr><td><strong>MCP</strong></td><td>执行操作的工具（how to do）</td><td>工具描述常驻</td></tr>
+</table>
+
+<h4>创建 Skills</h4>
+<pre>
+---
+name: 代码审查
+description: 对代码变更进行安全性、性能审查
+---
+
+# 审查清单
+1. 检查暴露的密钥
+2. 检查 SQL 注入或 XSS
+3. 检查性能问题
+</pre>
+<p><strong>关键：description 要精确。</strong>AI 根据它判断是否触发。</p>
+
+<h4>Plugins 插件系统</h4>
+<p>将整套设置打包成单一包，一条命令即可克隆他人的完整工作流。</p>
+</div>
+
+<hr>
+
+<!-- ====== P7 ====== -->
+<div class="chapter" id="p7">
+<div class="chapter-header">
+  <div class="chapter-num">P7</div>
+  <h2>Hooks 自动化</h2>
+</div>
+
+<p>Hooks = Claude Code 执行过程中<strong>自动触发的脚本</strong>。</p>
+
+<table>
+<tr><th>Hook</th><th>触发时机</th><th>典型用途</th></tr>
+<tr><td><code>pre-tool-use</code></td><td>工具执行前</td><td>拦截/替换命令</td></tr>
+<tr><td><code>post-tool-use</code></td><td>工具执行后</td><td>自动格式化</td></tr>
+<tr><td><code>user-prompt-submit</code></td><td>提交提示词时</td><td>预处理输入</td></tr>
+<tr><td><code>session-start</code></td><td>会话开始</td><td>加载环境</td></tr>
+<tr><td><code>stop</code></td><td>任务完成</td><td>自动跑测试</td></tr>
+</table>
+
+<h4>最强模式：Stop Hook + 自我纠错</h4>
+<pre>
+{
+  "hooks": {
+    "stop": [{
+      "command": "npm test",
+      "on_failure": "continue"
+    }]
+  }
+}
+</pre>
+<p>测试失败后 Claude 会继续修复直到通过。</p>
+</div>
+
+<hr>
+
+<!-- ====== P8 ====== -->
+<div class="chapter" id="p8">
+<div class="chapter-header">
+  <div class="chapter-num">P8</div>
+  <h2>MCP 服务器：连接外部世界</h2>
+</div>
+
+<p>MCP = Claude Code 连接外部工具的标准协议。</p>
+
+<table>
+<tr><th>Server</th><th>用途</th></tr>
+<tr><td><strong>Figma</strong></td><td>设计稿 → 代码</td></tr>
+<tr><td><strong>Playwright</strong></td><td>浏览器自动化</td></tr>
+<tr><td><strong>Context7</strong></td><td>最新编程库文档</td></tr>
+<tr><td><strong>GitHub</strong></td><td>Issue/PR 管理</td></tr>
+<tr><td><strong>DB Hub</strong></td><td>直接访问数据库</td></tr>
+</table>
+
+<blockquote class="warn"><strong>不要贪多！</strong>每个 MCP 都占上下文。10 个 MCP 不仅浪费 Token，还让 Claude 困惑。只装每天用的。</blockquote>
+
+<p><strong>CLI 优先原则（官方）：</strong>如果工具既有 CLI 也有 MCP，优先用 CLI。MCP 的核心价值是给那些不能通过命令行访问的工具提供接入通道（如 Figma 设计稿、第三方 SaaS 平台）。如果命令行能搞定，就没必要多装一个 MCP。</p>
+</div>
+
+<hr>
+
+<!-- ====== P9 ====== -->
+<div class="chapter" id="p9">
+<div class="chapter-header">
+  <div class="chapter-num">P9</div>
+  <h2>多 Agent 协作与子智能体 <span class="key-badge">重点</span></h2>
+</div>
+
+<p>Claude Code 本质是<strong>单智能体设计</strong>，通过子智能体扩展多 Agent 能力。</p>
+
+<table>
+<tr><th>模型</th><th>机制</th><th>适用场景</th></tr>
+<tr><td><strong>Fork</strong></td><td>继承父上下文，缓存优化</td><td>共享上下文的任务</td></tr>
+<tr><td><strong>Teammate</strong></td><td>独立终端，文件邮箱通信</td><td>完全独立环境</td></tr>
+<tr><td><strong>Worktree</strong></td><td>独立 git 工作树</td><td>并行开发不同功能</td></tr>
+</table>
+
+<p><strong>成本优势：</strong>子智能体共享提示词缓存（Prompt Cache），运行多个的成本远低于独立运行多个完整实例。</p>
+
+<pre>
+# 创建
+/agents
+
+# 调用
+@code-reviewer 审查一下 auth 模块
+</pre>
+
+<h4>多智能体通信</h4>
+<p>通过共享 Markdown 文件传递信息：智能体 A 写入 → ticket.md → 智能体 B 读取。</p>
+</div>
+
+<!-- 底部 -->
+<div class="footer">
+</div>
+
+</div><!-- /main -->
+
+<script>
+// 侧边栏高亮
+const links = document.querySelectorAll('.sidebar a');
+const chapters = document.querySelectorAll('.chapter');
+
+window.addEventListener('scroll', () => {
+  let current = '';
+  chapters.forEach(ch => {
+    if (window.scrollY >= ch.offsetTop - 100) {
+      current = ch.id;
+    }
+  });
+  links.forEach(link => {
+    link.classList.remove('active');
+    if (link.getAttribute('href') === '#' + current) {
+      link.classList.add('active');
+    }
+  });
+});
+</script>
+
+<div class="cursor-dot"></div>
+<div class="cursor-glow"></div>
+
+<script>
+(function() {
+  const dot = document.querySelector('.cursor-dot');
+  const glow = document.querySelector('.cursor-glow');
+  let mx = -100, my = -100;
+  let gx = -100, gy = -100;
+  let lastSparkle = 0;
+  let lastSx = 0, lastSy = 0;
+
+  const colors = ['#00d9ff', '#7c5cfc', '#00e68a', '#ff9f43', '#ff6b9d', '#fff'];
+
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX;
+    my = e.clientY;
+    dot.style.left = mx + 'px';
+    dot.style.top = my + 'px';
+
+    resetIdleTimer();
+
+    // 星星粒子 — 移动足够距离才生成
+    const dist = Math.hypot(mx - lastSx, my - lastSy);
+    const now = Date.now();
+    if (dist > 24 && now - lastSparkle > 40) {
+      createSparkle(mx, my);
+      lastSparkle = now;
+      lastSx = mx;
+      lastSy = my;
+    }
+  });
+
+  // 光晕缓动跟随
+  function animateGlow() {
+    gx += (mx - gx) * 0.12;
+    gy += (my - gy) * 0.12;
+    glow.style.left = gx + 'px';
+    glow.style.top = gy + 'px';
+    requestAnimationFrame(animateGlow);
+  }
+  animateGlow();
+
+  // 静止检测 + idle 粒子发射
+  let idleTimer = null;
+  let idleInterval = null;
+  let isIdle = false;
+
+  function startIdle() {
+    if (isIdle) return;
+    isIdle = true;
+    dot.classList.add('idle');
+    idleInterval = setInterval(() => {
+      createIdleSparkle(mx, my);
+    }, 180);
+  }
+
+  function stopIdle() {
+    isIdle = false;
+    dot.classList.remove('idle');
+    if (idleInterval) { clearInterval(idleInterval); idleInterval = null; }
+  }
+
+  function resetIdleTimer() {
+    stopIdle();
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(startIdle, 400);
+  }
+
+  // 悬停交互元素时变色变大
+  document.addEventListener('mouseover', e => {
+    if (e.target.closest('a, button, .sidebar a, .badge, th, .key-badge, pre, code')) {
+      dot.classList.add('hover');
+    }
+  });
+  document.addEventListener('mouseout', e => {
+    if (e.target.closest('a, button, .sidebar a, .badge, th, .key-badge, pre, code')) {
+      dot.classList.remove('hover');
+    }
+  });
+
+  // 隐藏/显示
+  document.addEventListener('mouseleave', () => {
+    dot.style.opacity = '0';
+    glow.style.opacity = '0';
+  });
+  document.addEventListener('mouseenter', e => {
+    mx = e.clientX;
+    my = e.clientY;
+    dot.style.opacity = '1';
+    glow.style.opacity = '1';
+    resetIdleTimer();
+  });
+
+  function createSparkle(x, y) {
+    const s = document.createElement('div');
+    s.className = 'sparkle';
+    const size = Math.random() * 4 + 2;
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    const offsetX = (Math.random() - 0.5) * 16;
+    const offsetY = (Math.random() - 0.5) * 16;
+    s.style.cssText = `
+      left:${x + offsetX}px; top:${y + offsetY}px;
+      width:${size}px; height:${size}px;
+      background:${color};
+      box-shadow: 0 0 ${size * 2}px ${color};
+    `;
+    document.body.appendChild(s);
+    s.addEventListener('animationend', () => s.remove());
+  }
+
+  function createIdleSparkle(x, y) {
+    const s = document.createElement('div');
+    const size = Math.random() * 3.5 + 1.5;
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 30 + Math.random() * 50;
+    const vx = Math.cos(angle) * speed;
+    const vy = Math.sin(angle) * speed;
+    const duration = 800 + Math.random() * 600;
+
+    s.style.cssText = `
+      position:fixed; pointer-events:none; z-index:99997; border-radius:50%;
+      left:${x}px; top:${y}px;
+      width:${size}px; height:${size}px;
+      background:${color};
+      box-shadow: 0 0 ${size * 3}px ${color};
+      transform: translate(-50%,-50%);
+    `;
+    document.body.appendChild(s);
+
+    const start = performance.now();
+    function tick(now) {
+      const t = (now - start) / duration;
+      if (t >= 1) { s.remove(); return; }
+      const ease = 1 - (1 - t) * (1 - t); // easeOut
+      s.style.left = (x + vx * ease) + 'px';
+      s.style.top = (y + vy * ease) + 'px';
+      s.style.opacity = 1 - t;
+      s.style.transform = `translate(-50%,-50%) scale(${1 - t * 0.8})`;
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+})();
+</script>
+
+</body>
+</html>
